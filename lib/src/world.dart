@@ -67,6 +67,8 @@ class World {
           .where((t) => t != null)
           .toList(growable: false),
       closest,
+      mapWidth,
+      mapHeight,
     );
   }
 

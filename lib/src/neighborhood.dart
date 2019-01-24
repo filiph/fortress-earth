@@ -13,6 +13,10 @@ class Neighborhood {
 
   final City closestCity;
 
+  final int worldWidth;
+
+  final int worldHeight;
+
   final Vec pos;
 
   final List<Tile> _cardinalNeighbors;
@@ -27,6 +31,8 @@ class Neighborhood {
     this._cardinalNeighbors,
     this._intercardinalNeighbors,
     this.closestCity,
+    this.worldWidth,
+    this.worldHeight,
   );
 
   int get availableUnits => closestCity?.availableUnits ?? 0;
@@ -36,11 +42,13 @@ class Neighborhood {
       _cardinalNeighbors.where((t) => t.isGood).length;
 
   /// Returns the count of neighbors that are good.
-  List<Tile> get neighborsWithGoodInThem => neighbors.where((t) => t.isGood).toList(growable: false);
+  List<Tile> get neighborsWithGoodInThem =>
+      neighbors.where((t) => t.isGood).toList(growable: false);
 
   double get diff => good - evil;
 
   int get distanceSquaredToCity {
+    // TODO: toroidal wrapping
     if (closestCity == null) return infiniteDistance;
     return (pos - closestCity.pos).lengthSquared;
   }
@@ -62,6 +70,7 @@ class Neighborhood {
 
   Direction get towardsCity {
     if (closestCity == null) return Direction.none;
+    // TODO: toroidal wrapping
     return (closestCity.pos - pos).nearestDirection;
   }
 
@@ -77,8 +86,27 @@ class Neighborhood {
   }
 
   Tile get tileTowardsEnemy {
-    final vec = pos + towardsEnemy;
+    final vec = _toroidalWrap(pos + towardsEnemy);
     return neighbors.where((t) => t.pos == vec).single;
+  }
+
+  Vec _toroidalWrap(Vec v) {
+    int x = v.x;
+    int y = v.y;
+    // Y will put you on the other end
+    if (y < 0) {
+      y = 0;
+      x += worldWidth ~/ 2;
+    }
+    if (y >= worldHeight) {
+      y = worldHeight - 1;
+      x += worldWidth ~/ 2;
+    }
+    // X is simply wrapped around.
+    while (x < 0) x += worldWidth;
+    while (x >= worldWidth) x -= worldWidth;
+
+    return Vec(x, y);
   }
 
   static int sum(int a, int b) => a + b;
