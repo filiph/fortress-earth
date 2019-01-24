@@ -1,0 +1,9 @@
+body {
+  background: black;
+}
+
+h1 {
+  color: aliceblue;
+  font-size: 17px;
+  font-family: Menlo, Consolas;
+}
