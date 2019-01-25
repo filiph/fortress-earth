@@ -33,7 +33,9 @@ class World {
       final current = _tiles[vec];
       if (current.isOcean) continue;
       final hood = _getNeighborhoodOf(vec);
-      current.updateFromNeighborhood(hood);
+      current.updateGood(hood);
+      current.updateGoodNeed(hood);
+      current.updateGoodNeedGradient(hood);
     }
   }
 

@@ -45,6 +45,9 @@ class Neighborhood {
   List<Tile> get neighborsWithGoodInThem =>
       neighbors.where((t) => t.isGood).toList(growable: false);
 
+  /// The difference between good and evil.
+  ///
+  /// If positive, `good` is stronger than `evil` in the neighborhood.
   double get diff => good - evil;
 
   int get distanceSquaredToCity {

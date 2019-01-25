@@ -19,6 +19,7 @@ void runGame(html.CanvasElement canvas) {
 
   ui.keyPress.bind("animate", KeyCode.space);
   ui.keyPress.bind("profile", KeyCode.p);
+  ui.keyPress.bind("need-gradient", KeyCode.n, shift: true);
 
   final world = World(
     mapWidth,
@@ -63,6 +64,10 @@ class GameScreen extends Screen<String> {
         profile();
         break;
 
+      case "need-gradient":
+        _showNeedGradient = !_showNeedGradient;
+        break;
+
       default:
         return false;
     }
@@ -98,7 +103,12 @@ class GameScreen extends Screen<String> {
     for (int x = mapOffsetLeft; x < mapOffsetLeft + world.tiles.width; x++) {
       for (int y = mapOffsetTop; y < mapOffsetTop + world.tiles.height; y++) {
         final tile = world.tiles.get(x, y);
-        final char = tile.isNeutral ? '░' : '▓';
+        var char = tile.isNeutral ? '░' : '▓';
+        if (_showNeedGradient) {
+          int index =
+              ((tile.goodNeedGradient.clamp(-100, 100) + 100) / 20).round();
+          char = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0][index].toString();
+        }
         terminal.writeAt(
           x,
           y,
@@ -132,6 +142,8 @@ class GameScreen extends Screen<String> {
     _latestRenderTime = _stopwatch.elapsedMicroseconds;
     _stopwatch.stop();
   }
+
+  bool _showNeedGradient = false;
 
   void update() {
     _stopwatch.reset();
