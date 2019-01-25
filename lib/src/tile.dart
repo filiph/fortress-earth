@@ -11,6 +11,10 @@ class Tile {
   final int roughness;
   final Vec pos;
   final Color backgroundColor;
+
+  /// When foreground is not needed to show units, we create a shade
+  /// of [backgroundColor] to show.
+  final Color neutralForegroundColor;
   int good;
   int evil;
 
@@ -20,8 +24,10 @@ class Tile {
     this.backgroundColor = Color.purple,
     this.good = 0,
     this.evil = 0,
-  }) : assert(
-            good == 0 || evil == 0, "Cannot have tile with both good and evil");
+  })  : assert(
+            good == 0 || evil == 0, "Cannot have tile with both good and evil"),
+        neutralForegroundColor =
+            backgroundColor.blend(Color.black, 0.3 + _random.nextDouble() / 3);
 
   int get diff => good - evil;
 
@@ -34,7 +40,7 @@ class Tile {
       return Color(value, value ~/ 2, value ~/ 2);
     } else {
       assert(isNeutral);
-      return Color.black;
+      return neutralForegroundColor;
     }
   }
 
