@@ -13,7 +13,6 @@ Color getTerrainColor(Vec vec) {
   final g = (pixel & 0x00FF00) >> 8;
   final r = (pixel & 0x0000FF);
 
-
   if (_isOcean[hash]) {
     // Dim oceans
     return Color(r ~/ 3, g ~/ 3, b ~/ 2);
