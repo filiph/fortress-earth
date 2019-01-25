@@ -43,9 +43,13 @@ void runGame(html.CanvasElement canvas) {
 class GameScreen extends Screen<String> {
   final UserInterface<String> ui;
 
-  int counter = 0;
-
   final World world;
+
+  Stopwatch _stopwatch = Stopwatch();
+
+  int _latestUpdateTime = 0;
+
+  int _latestRenderTime = 0;
 
   GameScreen(this.ui, this.world);
 
@@ -75,23 +79,26 @@ class GameScreen extends Screen<String> {
   }
 
   void render(Terminal terminal) {
+    _stopwatch.reset();
+    _stopwatch.start();
+
     terminal.clear();
 
     // Top bar
-    terminal.writeAt(0, 0, "*" * terminal.width);
+    // terminal.writeAt(0, 0, "*" * terminal.width);
 
     // Bottom bar
-    terminal.writeAt(0, terminal.height - 1, "*" * terminal.width);
+    terminal.writeAt(0, terminal.height - 1, "═" * terminal.width);
 
     // Below-map bar
     terminal.writeAt(
-        0, mapOffsetTop + world.tiles.height, '^' * terminal.width);
+        0, mapOffsetTop + world.tiles.height, '▀' * terminal.width);
 
     // Map.
     for (int x = mapOffsetLeft; x < mapOffsetLeft + world.tiles.width; x++) {
       for (int y = mapOffsetTop; y < mapOffsetTop + world.tiles.height; y++) {
         final tile = world.tiles.get(x, y);
-        final char = tile.isNeutral ? ' ' : '☻';
+        final char = tile.isNeutral ? '░' : '▓';
         terminal.writeAt(
           x,
           y,
@@ -115,14 +122,25 @@ class GameScreen extends Screen<String> {
       y++;
     }
 
-    terminal.writeAt(width - 20, height - 1, "  counter: $counter  ");
+    final renderMilliseconds =
+        (_latestRenderTime / 1000).toStringAsFixed(3).padLeft(6);
+    final updateMilliseconds =
+        (_latestUpdateTime / 1000).toStringAsFixed(3).padLeft(6);
+    terminal.writeAt(5, height - 1, "  render: ${renderMilliseconds}ms  ");
+    terminal.writeAt(30, height - 1, "  update: ${updateMilliseconds}ms  ");
+
+    _latestRenderTime = _stopwatch.elapsedMicroseconds;
+    _stopwatch.stop();
   }
 
   void update() {
+    _stopwatch.reset();
+    _stopwatch.start();
+
     world.update();
 
-    counter++;
-
     dirty();
+
+    _latestUpdateTime = _stopwatch.elapsedMicroseconds;
   }
 }
