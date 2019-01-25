@@ -24,7 +24,8 @@ void runGame(html.CanvasElement canvas) {
   final world = World(
     mapWidth,
     mapHeight,
-    (v) => Tile(v, getTerrainRoughness(v), backgroundColor: getTerrainColor(v)),
+    (v) => Tile(v, getTerrainRoughness(v), backgroundColor: getTerrainColor(v),
+    evil: v == Vec(30, 14) ? 100 : 0),
     [
       City("SFO", Vec(21, 15)),
       City("NYC", Vec(40, 13)),
@@ -106,8 +107,8 @@ class GameScreen extends Screen<String> {
         var char = tile.isNeutral ? '░' : '▓';
         if (_showNeedGradient) {
           int index =
-              ((tile.goodNeedGradient.clamp(-100, 100) + 100) / 20).round();
-          char = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0][index].toString();
+              ((tile.goodNeedGradient.clamp(-100, 100) + 100) / 20).floor();
+          char = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9][index].toString();
         }
         terminal.writeAt(
           x,

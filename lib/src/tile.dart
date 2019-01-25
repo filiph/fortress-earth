@@ -90,7 +90,8 @@ class Tile {
 
   void updateGood(Neighborhood hood) {
     if (isEvil) {
-      throw UnimplementedError();
+      // TODO: implement possible take over.
+      return;
     }
 
     // Short-circuit ocean tiles: they can't update.
