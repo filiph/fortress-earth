@@ -27,7 +27,8 @@ class City {
 
   int _availableUnits = 500;
 
-  City(this.name, this.pos) : keyCode = name.codeUnitAt(0);
+  City(this.name, this.pos, {int keyCode})
+      : keyCode = keyCode ?? name.codeUnitAt(0);
 
   int get availableUnits => _availableUnits;
 

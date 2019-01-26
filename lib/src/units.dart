@@ -39,7 +39,7 @@ class Unit {
 
 class Units {
   final Map<int, Unit> units = Map.unmodifiable({
-    KeyCode.one: Unit(KeyCode.one, "Green Berets", Color.green),
+    KeyCode.one: Unit(KeyCode.one, "Green Berets", Color.lightGreen),
     KeyCode.two: Unit(KeyCode.two, "Green Berets", Color.lightGreen),
   });
 

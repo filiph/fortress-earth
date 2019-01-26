@@ -29,12 +29,19 @@ void runGame(html.CanvasElement canvas) {
     (v) => Tile(v, getTerrainRoughness(v),
         backgroundColor: getTerrainColor(v), evil: v == Vec(30, 14) ? 100 : 0),
     [
-      City("SFO", Vec(21, 15)),
-      City("NYC", Vec(40, 13)),
-      City("PAR", Vec(66, 12)),
-      City("MOS", Vec(76, 10)),
-      City("BEI", Vec(109, 13)),
-      City("DEL", Vec(92, 18)),
+      // From: http://www.freeworldmaps.net/cities/top50/top50-cities-world.png
+      City("Los Angeles", Vec(22, 15)),
+      City("New York", Vec(40, 13)),
+      City("Paris", Vec(66, 12)),
+      City("Moscow", Vec(76, 10)),
+      City("Beijing", Vec(109, 13)),
+      City("Delhi", Vec(92, 18)),
+      City("Jakarta", Vec(105, 26)),
+      City("Cairo", Vec(77, 17)),
+      City("Kinshasa", Vec(70, 26)),
+      City("Sao Paolo", Vec(49, 31)),
+      City("Quito", Vec(37, 26)),
+      City("Sydney", Vec(119, 35), keyCode: KeyCode.y),
     ],
   );
 

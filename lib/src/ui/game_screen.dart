@@ -93,11 +93,11 @@ class GameScreen extends Screen<Input> {
     // Units
     for (final unit in units.units.values) {
       terminal.drawChar(mapOffsetLeft + unit.pos.x, mapOffsetTop + unit.pos.y,
-          unit.keyCode, unit.color);
+          unit.keyCode, Color.black, unit.color);
     }
 
     // List of cities.
-    int y = mapOffsetTop + mapHeight + 2;
+    int y = mapOffsetTop + mapHeight;
     for (final city in world.cities.values) {
       terminal.writeAt(width - 30, y, "${city.name} ${city.availableUnits}");
       y++;
