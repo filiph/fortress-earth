@@ -2,8 +2,22 @@ body {
   background: black;
 }
 
+.matrioska {
+  width: fit-content;
+  margin: 3rem auto;
+}
+
+.text-content {
+  width: 80em;
+  margin: 8rem auto;
+}
+
 h1 {
   color: aliceblue;
   font-size: 17px;
-  font-family: Menlo, Consolas;
+}
+
+p {
+  color: lightgray;
+  font-size: 17px;
 }
