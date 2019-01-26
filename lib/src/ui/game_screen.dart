@@ -21,8 +21,8 @@ class GameScreen extends Screen<Input> {
 
   int _latestRenderTime = 0;
 
-  final UnitPanel _unitPanel = UnitPanel(
-      mapOffsetLeft + 50, mapOffsetTop + mapHeight - 6, 47, 13);
+  final UnitPanel _unitPanel =
+      UnitPanel(mapOffsetLeft + 50, mapOffsetTop + mapHeight - 6, 47, 13);
 
   final ChatPanel _chatPanel = ChatPanel(
       mapOffsetLeft,
@@ -83,22 +83,6 @@ class GameScreen extends Screen<Input> {
 
     terminal.clear();
 
-    // Top bar
-    // terminal.writeAt(0, 0, "*" * terminal.width);
-
-    // Bottom bar
-    //terminal.writeAt(0, terminal.height - 1, "═" * terminal.width);
-
-    // Bottom left corner
-    terminal.writeAt(0, height - 1, '█');
-
-    // Bottom right corner
-    terminal.writeAt(width - 1, height - 1, '█');
-
-    // Below-map bar
-    //terminal.writeAt(
-    //    0, mapOffsetTop + world.tiles.height, '▀' * terminal.width);
-
     // Map.
     for (int x = 0; x < mapWidth; x++) {
       for (int y = 0; y < mapHeight; y++) {
@@ -113,11 +97,11 @@ class GameScreen extends Screen<Input> {
           int index =
               ((tile.goodNeedGradient.clamp(-100, 100) + 100) / 20).floor();
           char = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9][index].toString();
-        } else if (tile.isNeutral) {
-          char = '░';
         } else if (world.cities.containsKey(vec)) {
           char = '■';
           foregroundColor = Color.yellow;
+        } else if (tile.isNeutral) {
+          char = '░';
         } else {
           char = '▓';
         }
@@ -149,6 +133,12 @@ class GameScreen extends Screen<Input> {
 
     // Cities panel.
     _citiesPanel.render(terminal);
+
+    // The verbs panel / menu.
+    terminal.writeAt(38, height - 3,
+        'Send   Command   Unleash   Inspect   Research         Menu');
+    terminal.writeAt(38, height - 2,
+        '▀      ▀         ▀         ▀         ▀                ▀   ', Color.gray  );
 
     final renderMilliseconds =
         (_latestRenderTime / 1000).toStringAsFixed(3).padLeft(6);

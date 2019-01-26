@@ -17,7 +17,7 @@ abstract class Panel {
 
     Draw.box(terminal, bounds.x, bounds.y, bounds.width, bounds.height);
     renderPanel(terminal.rect(
-        bounds.x + 1, bounds.y, bounds.width - 1, bounds.height - 1));
+        bounds.x + 2, bounds.y, bounds.width - 4, bounds.height - 1));
   }
 
   @protected

@@ -8,15 +8,23 @@ class ChatPanel extends Panel {
   void renderPanel(Terminal terminal) {
     terminal.writeAt(0, 0, "Chat");
 
-    terminal.writeAt(0, 2, "@realDonald  [1] Green Berets");
+    var y = bounds.height - 14;
 
-    terminal.writeAt(0, 4, "Cannot believe the fake news");
-    terminal.writeAt(0, 5, "media have already taken a");
-    terminal.writeAt(0, 6, "(wrong!) stance on my great");
-    terminal.writeAt(0, 7, "battle at Paris. Sad!");
+    terminal.writeAt(0, y++, "@realDonald [1] Green Berets", Color.gray);
 
-    for (int y = 9; y < terminal.height; y++) {
-      terminal.writeAt(0, y, y.isEven ? "Blah" : "Lorem ipsum");
-    }
+    y += 1;
+
+    terminal.writeAt(0, y++, "Cannot believe the fake news");
+    terminal.writeAt(0, y++, "media have already taken a");
+    terminal.writeAt(0, y++, "(wrong!) stance on my great");
+    terminal.writeAt(0, y++, "battle at Paris. Sad!");
+
+    y += 2;
+
+    terminal.writeAt(0, y++,   "@samuelJack       [7] Aerial", Color.gray);
+
+    y += 1;
+
+    terminal.writeAt(0, y++, "lol");
   }
 }
