@@ -39,7 +39,7 @@ void runGame(html.CanvasElement canvas) {
       City("Jakarta", Vec(105, 26)),
       City("Cairo", Vec(77, 17)),
       City("Kinshasa", Vec(70, 26)),
-      City("Sao Paolo", Vec(49, 31)),
+      City("Sao Paulo", Vec(49, 31)),
       City("Quito", Vec(37, 26)),
       City("Sydney", Vec(119, 35), keyCode: KeyCode.y),
     ],
