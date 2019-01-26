@@ -9,11 +9,12 @@ import 'package:malison/malison_web.dart';
 class SendDialog extends Screen<Input> {
   final World world;
 
-  final Units units;
+  final List<Unit> units;
 
   Unit _selectedUnit;
 
-  SendDialog(this.world, this.units);
+  SendDialog(this.world, Iterable<Unit> units)
+      : units = units.toList(growable: false);
 
   bool get isTransparent => true;
 
@@ -39,11 +40,14 @@ class SendDialog extends Screen<Input> {
   }
 
   bool keyDown(int keyCode, {bool shift, bool alt}) {
-    if (units.units.containsKey(keyCode)) {
-      _selectedUnit = units.units[keyCode];
-      ui.push(WhereDialog(world, _selectedUnit));
-      return true;
+    for (final unit in units) {
+      if (unit.keyCode == keyCode) {
+        _selectedUnit = unit;
+        ui.push(WhereDialog(world.cities.values));
+        return true;
+      }
     }
+
     return false;
   }
 

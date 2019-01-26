@@ -26,7 +26,7 @@ class GameScreen extends Screen<Input> {
         break;
 
       case Input.send:
-        ui.push(SendDialog(world, units));
+        ui.push(SendDialog(world, units.units.values));
         break;
 
       case Input.debugNeedGradient:

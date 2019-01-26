@@ -6,13 +6,11 @@ import 'package:malison/malison.dart';
 import 'package:malison/malison_web.dart';
 
 class WhereDialog extends Screen<Input> {
-  final World world;
-
-  final Unit unit;
+  final List<City> cities;
 
   City _selectedCity;
 
-  WhereDialog(this.world, this.unit);
+  WhereDialog(Iterable<City> cities) : cities = cities.toList(growable: false);
 
   bool get isTransparent => true;
 
@@ -30,7 +28,7 @@ class WhereDialog extends Screen<Input> {
   }
 
   bool keyDown(int keyCode, {bool shift, bool alt}) {
-    for (final city in world.cities.values) {
+    for (final city in cities) {
       if (city.keyCode == keyCode) {
         _selectedCity = city;
         // TODO: add animation (at least wait a while)
@@ -47,7 +45,7 @@ class WhereDialog extends Screen<Input> {
         40, fullTerminal.height - 20, fullTerminal.width ~/ 2, 18);
 
     terminal.clear();
-    terminal.writeAt(0, 0, "Sending ${unit.name} to ...");
+    terminal.writeAt(0, 0, "Select city...");
     if (_selectedCity != null) {
       terminal.writeAt(0, 1, "Selected city: $_selectedCity");
     }
