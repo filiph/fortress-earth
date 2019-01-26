@@ -21,11 +21,13 @@ class City {
 
   final String name;
 
+  final int keyCode;
+
   final Vec pos;
 
   int _availableUnits = 500;
 
-  City(this.name, this.pos);
+  City(this.name, this.pos) : keyCode = name.codeUnitAt(0);
 
   int get availableUnits => _availableUnits;
 

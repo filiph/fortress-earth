@@ -14,6 +14,9 @@ class Input {
   /// Exit to game menu.
   static const exitToGameMenu = Input("exitToGameMenu");
 
+  /// Pause update.
+  static const pause = Input("pause");
+
   /// Directional inputs.
   static const n = Input("n");
   static const ne = Input("ne");
@@ -36,6 +39,9 @@ class Input {
 
   /// Verbs. These open UIs.
   static const send = Input("send");
+
+  /// Debug inputs.
+  static const debugNeedGradient = Input("debugNeedGradient");
 
   final String name;
 

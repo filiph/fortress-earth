@@ -18,6 +18,14 @@ class World {
   World(this.mapWidth, this.mapHeight, Tile Function(Vec) generator,
       Iterable<City> cities)
       : _cities = Map.fromIterable(cities, key: (c) => c.pos) {
+    assert(() {
+      final keyCodes = Set<int>();
+      for (final city in _cities.values) {
+        if (keyCodes.contains(city.keyCode)) return false;
+        keyCodes.add(city.keyCode);
+      }
+      return true;
+    }(), "Cities must have unique keyCode callsigns.");
     _tiles = Array2D<Tile>.generated(mapWidth, mapHeight, generator);
   }
 

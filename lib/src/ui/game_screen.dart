@@ -1,12 +1,15 @@
 import 'package:fortress_earth/src/constants.dart';
+import 'package:fortress_earth/src/ui/dialogs/send.dart';
+import 'package:fortress_earth/src/ui/input.dart';
+import 'package:fortress_earth/src/units.dart';
 import 'package:fortress_earth/src/world.dart';
 import 'package:malison/malison.dart';
 import 'package:malison/malison_web.dart';
 
-class GameScreen extends Screen<String> {
-  final UserInterface<String> ui;
-
+class GameScreen extends Screen<Input> {
   final World world;
+
+  final Units units;
 
   Stopwatch _stopwatch = Stopwatch();
 
@@ -14,19 +17,19 @@ class GameScreen extends Screen<String> {
 
   int _latestRenderTime = 0;
 
-  GameScreen(this.ui, this.world);
+  GameScreen(this.world, this.units);
 
-  bool handleInput(String input) {
+  bool handleInput(Input input) {
     switch (input) {
-      case "animate":
+      case Input.pause:
         ui.running = !ui.running;
         break;
 
-      case "profile":
-        profile();
+      case Input.send:
+        ui.push(SendDialog(world, units));
         break;
 
-      case "need-gradient":
+      case Input.debugNeedGradient:
         _showNeedGradient = !_showNeedGradient;
         break;
 
@@ -87,6 +90,12 @@ class GameScreen extends Screen<String> {
           Color.black, Color.yellow);
     }
 
+    // Units
+    for (final unit in units.units.values) {
+      terminal.drawChar(mapOffsetLeft + unit.pos.x, mapOffsetTop + unit.pos.y,
+          unit.keyCode, unit.color);
+    }
+
     // List of cities.
     int y = mapOffsetTop + mapHeight + 2;
     for (final city in world.cities.values) {
@@ -107,11 +116,22 @@ class GameScreen extends Screen<String> {
 
   bool _showNeedGradient = false;
 
+  void activate(Screen<Input> popped, Object result) {
+    if (result == null) return;
+
+    assert(result is SendDialogResult);
+    assert(popped is SendDialog);
+
+    final dialogResult = result as SendDialogResult;
+    dialogResult.unit.setDestination(dialogResult.destination.pos);
+  }
+
   void update() {
     _stopwatch.reset();
     _stopwatch.start();
 
     world.update();
+    units.update();
 
     dirty();
 
