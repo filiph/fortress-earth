@@ -55,6 +55,8 @@ class GameScreen extends Screen<Input> {
         break;
 
       case Input.send:
+        // TODO: drop all verbs and dim them
+        //       show: Send [WHICH UNIT] to [WHICH CITY]
         ui.push(SendDialog(world, units.units.values));
         break;
 

@@ -1,4 +1,5 @@
 import 'package:fortress_earth/src/ui/panels/panel.dart';
+import 'package:fortress_earth/src/ui/theme.dart';
 import 'package:malison/malison.dart';
 
 class ChatPanel extends Panel {
@@ -10,7 +11,7 @@ class ChatPanel extends Panel {
 
     var y = bounds.height - 14;
 
-    terminal.writeAt(0, y++, "@realDonald [1] Green Berets", Color.gray);
+    terminal.writeAt(0, y++, "@realDonald [1] Green Berets", TextTheme.normal);
 
     y += 1;
 
@@ -21,7 +22,7 @@ class ChatPanel extends Panel {
 
     y += 2;
 
-    terminal.writeAt(0, y++,   "@samuelJack       [7] Aerial", Color.gray);
+    terminal.writeAt(0, y++, "@samuelJack       [7] Aerial", TextTheme.normal);
 
     y += 1;
 

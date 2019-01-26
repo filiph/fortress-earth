@@ -1,5 +1,6 @@
 import 'package:fortress_earth/src/city.dart';
 import 'package:fortress_earth/src/ui/panels/panel.dart';
+import 'package:fortress_earth/src/ui/theme.dart';
 import 'package:malison/malison.dart';
 import 'package:piecemeal/piecemeal.dart';
 
@@ -20,7 +21,7 @@ class CitiesPanel extends Panel {
     for (final city in _cities) {
       terminal.writeAt(0, y, "${city.name}");
       terminal.writeAt(12, y, city.availableUnits.toString().padLeft(6) + 'K');
-      terminal.writeAt(22, y, 'OK', Color.darkGreen);
+      terminal.writeAt(22, y, 'OK', TextTheme.ok);
 
       y++;
     }
