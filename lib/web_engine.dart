@@ -31,7 +31,7 @@ void runGame(html.CanvasElement canvas, {void Function() fullscreenCallback}) {
     mapWidth,
     mapHeight,
     (v) => Tile(v, getTerrainRoughness(v),
-        backgroundColor: getTerrainColor(v), evil: v == Vec(30, 14) ? 100 : 0),
+        backgroundColor: getTerrainColor(v), evil: v == Vec(70, 13) ? 100 : 0),
   );
 
   final units = Units();
