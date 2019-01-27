@@ -1,3 +1,4 @@
+import 'package:fortress_earth/src/world.dart';
 import 'package:malison/malison.dart';
 import 'package:piecemeal/piecemeal.dart';
 
@@ -8,15 +9,19 @@ class Unit {
 
   final Color color;
 
-  Vec _pos = Vec.zero;
+  /// Current position. Starts in the middle of the Atlantic.
+  Vec _pos = Vec(50, 18);
 
   Vec _destination = Vec.zero;
+
   int _beforeNextMove = 0;
 
   /// The lesser this numbers, the faster the unit will travel.
   final ticksPerMove = 10;
 
-  Unit(this.keyCode, this.name, this.color);
+  Unit(this.keyCode, this.name, this.color, {Vec initialDestination}) {
+    _destination = initialDestination ?? _pos;
+  }
 
   bool get hasArrived => _destination == _pos;
 
@@ -39,16 +44,20 @@ class Unit {
 
 class Units {
   final Map<int, Unit> units = Map.unmodifiable({
-    KeyCode.one: Unit(KeyCode.one, "Marines", Color.lightGreen),
-    KeyCode.two: Unit(KeyCode.two, "Marines", Color.lightGreen),
+    KeyCode.one: Unit(KeyCode.one, "Marines", Color.lightGreen,
+        initialDestination: Vec(92, 18)),
+    KeyCode.two: Unit(KeyCode.two, "Marines", Color.lightGreen,
+        initialDestination: Vec(37, 26)),
     KeyCode.three: Unit(KeyCode.three, "Marines", Color.lightGreen),
     KeyCode.four: Unit(KeyCode.four, "Army", Color.lightBlue),
-    KeyCode.five: Unit(KeyCode.five, "Army", Color.lightBlue),
+    KeyCode.five: Unit(KeyCode.five, "Army", Color.lightBlue,
+        initialDestination: Vec(66, 12)),
     KeyCode.six: Unit(KeyCode.six, "Army", Color.lightBlue),
     KeyCode.seven: Unit(KeyCode.seven, "Air Force", Color.lightAqua),
     KeyCode.eight: Unit(KeyCode.eight, "Squad", Color.lightPurple),
     KeyCode.nine: Unit(KeyCode.nine, "Squad", Color.lightPurple),
-    KeyCode.zero: Unit(KeyCode.zero, "HQ", Color.lightGold),
+    KeyCode.zero: Unit(KeyCode.zero, "HQ", Color.lightGold,
+        initialDestination: Vec(40, 13)),
   });
 
   void update() {

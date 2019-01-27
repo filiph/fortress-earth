@@ -3,21 +3,39 @@ import 'dart:math';
 import 'package:fortress_earth/src/city.dart';
 import 'package:fortress_earth/src/neighborhood.dart';
 import 'package:fortress_earth/src/tile.dart';
+import 'package:malison/malison.dart';
 import 'package:piecemeal/piecemeal.dart';
 
 final _random = Random();
 
 class World {
+  static final defaultCities = [
+    // From: http://www.freeworldmaps.net/cities/top50/top50-cities-world.png
+    City("Los Angeles", Vec(22, 15)),
+    City("New York", Vec(40, 13)),
+    City("Paris", Vec(66, 12)),
+    City("Moscow", Vec(76, 10)),
+    City("Beijing", Vec(109, 13)),
+    City("Delhi", Vec(92, 18)),
+    City("Jakarta", Vec(105, 26)),
+    City("Cairo", Vec(77, 17)),
+    City("Kinshasa", Vec(70, 26)),
+    City("Sao Paulo", Vec(49, 31)),
+    City("Quito", Vec(37, 26)),
+    City("Sydney", Vec(119, 35), keyCode: KeyCode.y),
+  ];
+
   final int mapWidth;
+
   final int mapHeight;
 
   Array2D<Tile> _tiles;
 
-  final Map<Vec, City> _cities;
+  Map<Vec, City> _cities;
 
   World(this.mapWidth, this.mapHeight, Tile Function(Vec) generator,
-      Iterable<City> cities)
-      : _cities = Map.fromIterable(cities, key: (c) => c.pos) {
+      {Iterable<City> cities}) {
+    _cities = Map.fromIterable(cities ?? defaultCities, key: (c) => c.pos);
     assert(() {
       final keyCodes = Set<int>();
       for (final city in _cities.values) {

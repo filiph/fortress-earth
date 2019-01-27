@@ -11,7 +11,7 @@ void main() {
     const height = 20;
 
     setUp(() {
-      world = World(5, 5, (v) => Tile(v, height), []);
+      world = World(5, 5, (v) => Tile(v, height), cities: []);
     });
 
     test('everything stays neutral', () {
@@ -33,7 +33,8 @@ void main() {
     const height = 20;
 
     setUp(() {
-      world = World(5, 5, (v) => Tile(v, height), [City("SFO", Vec(0, 0))]);
+      world =
+          World(5, 5, (v) => Tile(v, height), cities: [City("SFO", Vec(0, 0))]);
     });
 
     test('good slowly overtakes', () {
