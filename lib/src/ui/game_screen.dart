@@ -1,5 +1,5 @@
 import 'package:fortress_earth/src/constants.dart';
-import 'package:fortress_earth/src/ui/dialogs/send.dart';
+import 'package:fortress_earth/src/ui/dialogs/unit_actions_dialog.dart';
 import 'package:fortress_earth/src/ui/input.dart';
 import 'package:fortress_earth/src/ui/panels/chat_panel.dart';
 import 'package:fortress_earth/src/ui/panels/cities_panel.dart';
@@ -23,8 +23,7 @@ class GameScreen extends Screen<Input> {
 
   int _latestRenderTime = 0;
 
-  final UnitPanel _unitPanel =
-      UnitPanel(mapOffsetLeft + 50, mapOffsetTop + mapHeight - 6, 47, 13);
+  final UnitPanel _unitPanel;
 
   final ChatPanel _chatPanel = ChatPanel(
       mapOffsetLeft,
@@ -36,15 +35,17 @@ class GameScreen extends Screen<Input> {
 
   bool _showNeedGradient = false;
 
-  GameScreen(this.world, this.units)
+  GameScreen(this.world, this.units, {this.fullscreenCallback})
       : _citiesPanel = CitiesPanel(mapOffsetLeft + mapWidth - 30,
-            mapOffsetTop + mapHeight - 4, 30, 16, world.cities);
+            mapOffsetTop + mapHeight - 4, 30, 16, world.cities),
+        _unitPanel = UnitPanel(
+            mapOffsetLeft + 50, mapOffsetTop + mapHeight - 6, 47, 14, units);
 
   void activate(Screen<Input> popped, Object result) {
     if (result == null) return;
 
     assert(result is SendDialogResult);
-    assert(popped is SendDialog);
+    assert(popped is UnitActionsDialog);
 
     final dialogResult = result as SendDialogResult;
     dialogResult.unit.setDestination(dialogResult.destination.pos);
@@ -56,10 +57,6 @@ class GameScreen extends Screen<Input> {
         ui.running = !ui.running;
         break;
 
-      case Input.send:
-        // TODO: drop all verbs and dim them
-        //       show: Send [WHICH UNIT] to [WHICH CITY]
-        ui.push(SendDialog(world, units.units.values));
       case Input.fullscreen:
         if (fullscreenCallback != null) fullscreenCallback();
         break;
@@ -73,6 +70,18 @@ class GameScreen extends Screen<Input> {
     }
 
     return true;
+  }
+
+
+  bool keyDown(int keyCode, {bool shift, bool alt}) {
+    for (final key in units.units.keys) {
+      if (key == keyCode) {
+        ui.push(UnitActionsDialog(10, 10, world, units.units[key]));
+        return true;
+      }
+    }
+
+    return false;
   }
 
   void profile() {
@@ -139,12 +148,6 @@ class GameScreen extends Screen<Input> {
 
     // Cities panel.
     _citiesPanel.render(terminal);
-
-    // The verbs panel / menu.
-    terminal.writeAt(38, height - 3,
-        'Send   Command   Unleash   Inspect   Research         Menu');
-    terminal.writeAt(38, height - 2,
-        '▀      ▀         ▀         ▀         ▀                ▀   ', Color.gray  );
 
     final renderMilliseconds =
         (_latestRenderTime / 1000).toStringAsFixed(3).padLeft(6);

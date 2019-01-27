@@ -6,15 +6,14 @@ import 'package:fortress_earth/src/world.dart';
 import 'package:malison/malison.dart';
 import 'package:malison/malison_web.dart';
 
-class SendDialog extends Screen<Input> {
+class UnitActionsDialog extends Screen<Input> {
   final World world;
 
-  final List<Unit> units;
+  final Unit unit;
 
-  Unit _selectedUnit;
+  Input _selectedInput;
 
-  SendDialog(this.world, Iterable<Unit> units)
-      : units = units.toList(growable: false);
+  UnitActionsDialog(int x, int y, this.world, this.unit);
 
   bool get isTransparent => true;
 
@@ -22,14 +21,20 @@ class SendDialog extends Screen<Input> {
     if (result == null) return;
     assert(result is City);
     assert(popped is WhereDialog);
+    assert(_selectedInput == Input.send);
 
-    ui.pop(SendDialogResult(_selectedUnit, result as City));
+    ui.pop(SendDialogResult(unit, result as City));
   }
 
   bool handleInput(Input input) {
     switch (input) {
       case Input.cancel:
         ui.pop();
+        break;
+
+      case Input.send:
+        _selectedInput = Input.send;
+        ui.push(WhereDialog(world.cities.values));
         break;
 
       default:
@@ -39,27 +44,12 @@ class SendDialog extends Screen<Input> {
     return true;
   }
 
-  bool keyDown(int keyCode, {bool shift, bool alt}) {
-    for (final unit in units) {
-      if (unit.keyCode == keyCode) {
-        _selectedUnit = unit;
-        ui.push(WhereDialog(world.cities.values));
-        return true;
-      }
-    }
-
-    return false;
-  }
-
   void render(Terminal fullTerminal) {
     final terminal = fullTerminal.rect(
         0, fullTerminal.height - 20, fullTerminal.width ~/ 2, 20);
 
     terminal.clear();
-    terminal.writeAt(0, 0, "Sending...");
-    if (_selectedUnit != null) {
-      terminal.writeAt(0, 1, "Selected unit: $_selectedUnit");
-    }
+    terminal.writeAt(0, 0, unit.name);
   }
 }
 
