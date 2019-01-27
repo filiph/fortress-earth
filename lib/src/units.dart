@@ -39,15 +39,15 @@ class Unit {
 
 class Units {
   final Map<int, Unit> units = Map.unmodifiable({
-    KeyCode.one: Unit(KeyCode.one, "Green Berets", Color.lightGreen),
-    KeyCode.two: Unit(KeyCode.two, "Green Berets", Color.lightGreen),
-    KeyCode.three: Unit(KeyCode.three, "Green Berets", Color.lightGreen),
+    KeyCode.one: Unit(KeyCode.one, "Marines", Color.lightGreen),
+    KeyCode.two: Unit(KeyCode.two, "Marines", Color.lightGreen),
+    KeyCode.three: Unit(KeyCode.three, "Marines", Color.lightGreen),
     KeyCode.four: Unit(KeyCode.four, "Army", Color.lightBlue),
     KeyCode.five: Unit(KeyCode.five, "Army", Color.lightBlue),
     KeyCode.six: Unit(KeyCode.six, "Army", Color.lightBlue),
-    KeyCode.seven: Unit(KeyCode.seven, "Aerial", Color.lightAqua),
-    KeyCode.eight: Unit(KeyCode.eight, "Death Squad", Color.lightPurple),
-    KeyCode.nine: Unit(KeyCode.nine, "Death Squad", Color.lightPurple),
+    KeyCode.seven: Unit(KeyCode.seven, "Air Force", Color.lightAqua),
+    KeyCode.eight: Unit(KeyCode.eight, "Squad", Color.lightPurple),
+    KeyCode.nine: Unit(KeyCode.nine, "Squad", Color.lightPurple),
     KeyCode.zero: Unit(KeyCode.zero, "HQ", Color.lightGold),
   });
 
