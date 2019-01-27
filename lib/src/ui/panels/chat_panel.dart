@@ -8,24 +8,16 @@ class ChatPanel extends Panel {
   @override
   void renderPanel(Terminal terminal) {
     terminal.writeAt(0, 0, "Chat");
+    terminal.writeAt(0, 2, "Here you'll find text", TextTheme.normal);
+    terminal.writeAt(0, 3, "messages from your generals.", TextTheme.normal);
 
-    var y = bounds.height - 14;
 
-    terminal.writeAt(0, y++, "@realDonald [1] Green Berets", TextTheme.normal);
+    var y = bounds.height - 6;
 
-    y += 1;
-
-    terminal.writeAt(0, y++, "Cannot believe the fake news");
-    terminal.writeAt(0, y++, "media have already taken a");
-    terminal.writeAt(0, y++, "(wrong!) stance on my great");
-    terminal.writeAt(0, y++, "battle at Paris. Sad!");
-
-    y += 2;
-
-    terminal.writeAt(0, y++, "@samuelJack       [7] Aerial", TextTheme.normal);
+    terminal.writeAt(0, y++, "@bot                  [0] HQ", TextTheme.normal);
 
     y += 1;
 
-    terminal.writeAt(0, y++, "lol");
+    terminal.writeAt(0, y++, "Chat not implemented yet...");
   }
 }
