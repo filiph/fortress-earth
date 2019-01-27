@@ -81,6 +81,7 @@ class GameScreen extends Screen<Input> {
       }
     }
 
+    print("unhandled keyDown: $keyCode (${String.fromCharCode(keyCode)})");
     return false;
   }
 
