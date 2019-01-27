@@ -12,7 +12,7 @@ import 'package:malison/malison.dart';
 import 'package:malison/malison_web.dart';
 import 'package:piecemeal/piecemeal.dart';
 
-void runGame(html.CanvasElement canvas) {
+void runGame(html.CanvasElement canvas, {void Function() fullscreenCallback}) {
   final terminal = CanvasTerminal(width, height,
       Font('Menlo, Consolas', size: 14, w: 10, h: 14, x: 1, y: 11), canvas);
   final ui = UserInterface<Input>(terminal);
@@ -21,6 +21,9 @@ void runGame(html.CanvasElement canvas) {
   ui.keyPress.bind(Input.cancel, KeyCode.escape);
 
   ui.keyPress.bind(Input.send, KeyCode.s);
+
+  ui.keyPress.bind(Input.fullscreen, KeyCode.f, alt: true);
+
   ui.keyPress.bind(Input.debugNeedGradient, KeyCode.n, shift: true);
 
   final world = World(
@@ -47,7 +50,7 @@ void runGame(html.CanvasElement canvas) {
 
   final units = Units();
 
-  ui.push(GameScreen(world, units));
+  ui.push(GameScreen(world, units, fullscreenCallback: fullscreenCallback));
 
   ui.handlingInput = true;
   ui.running = true;

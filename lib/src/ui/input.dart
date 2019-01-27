@@ -40,6 +40,9 @@ class Input {
   /// Verbs. These open UIs.
   static const send = Input("send");
 
+  /// Interface inputs.
+  static const fullscreen = Input("fullscreen");
+
   /// Debug inputs.
   static const debugNeedGradient = Input("debugNeedGradient");
 

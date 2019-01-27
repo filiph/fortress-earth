@@ -15,6 +15,8 @@ class GameScreen extends Screen<Input> {
 
   final Units units;
 
+  final void Function() fullscreenCallback;
+
   Stopwatch _stopwatch = Stopwatch();
 
   int _latestUpdateTime = 0;
@@ -58,6 +60,8 @@ class GameScreen extends Screen<Input> {
         // TODO: drop all verbs and dim them
         //       show: Send [WHICH UNIT] to [WHICH CITY]
         ui.push(SendDialog(world, units.units.values));
+      case Input.fullscreen:
+        if (fullscreenCallback != null) fullscreenCallback();
         break;
 
       case Input.debugNeedGradient:
