@@ -18,7 +18,7 @@ const mapOffsetTop = 0;
 const mapWidth = width;
 
 /// Distance from city after which units cannot go further.
-const double maxDeploymentRange = 4;
+const double maxDeploymentRange = 7;
 
 /// Very large number representing impassibility of the oceans.
 const oceanRoughness = 0xFFFFFF;

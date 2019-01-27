@@ -169,7 +169,7 @@ class GameScreen extends Screen<Input> {
     _stopwatch.start();
 
     world.update();
-    units.update();
+    units.update(world);
 
     dirty();
 

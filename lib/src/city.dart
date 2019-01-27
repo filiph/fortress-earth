@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:fortress_earth/src/neighborhood.dart';
 import 'package:fortress_earth/src/tile.dart';
+import 'package:fortress_earth/src/units.dart';
 import 'package:piecemeal/piecemeal.dart';
 
 /// Remaps [value] within the range [min]-[max] to the output range
@@ -25,12 +26,17 @@ class City {
 
   final Vec pos;
 
-  int _availableUnits = 500;
+  int _availableUnits = 0;
 
   City(this.name, this.pos, {int keyCode})
       : keyCode = keyCode ?? name.codeUnitAt(0);
 
   int get availableUnits => _availableUnits;
+
+  /// Deploys [unit] in this city.
+  void deploy(Unit unit) {
+    _availableUnits += 500;
+  }
 
   /// Claims units that cannot be available elsewhere. Called by tiles.
   int requestUnits(Tile tile, Neighborhood hood) {

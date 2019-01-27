@@ -54,15 +54,23 @@ class Units {
         initialDestination: Vec(66, 12)),
     KeyCode.six: Unit(KeyCode.six, "Army", Color.lightBlue),
     KeyCode.seven: Unit(KeyCode.seven, "Air Force", Color.lightAqua),
-    KeyCode.eight: Unit(KeyCode.eight, "Squad", Color.lightPurple),
+    KeyCode.eight: Unit(KeyCode.eight, "Squad", Color.lightPurple,
+        initialDestination: Vec(77, 17)),
     KeyCode.nine: Unit(KeyCode.nine, "Squad", Color.lightPurple),
     KeyCode.zero: Unit(KeyCode.zero, "HQ", Color.lightGold,
         initialDestination: Vec(40, 13)),
   });
 
-  void update() {
+  void update(World world) {
     for (final unit in units.values) {
+      if (unit.hasArrived) continue;
       unit.updatePosition();
+
+      // Hack: see if unit has arrived just now. Better to have a callback
+      //       or assign the unit to the city somehow.
+      if (unit.hasArrived) {
+        world.cities[unit.pos].deploy(unit);
+      }
     }
   }
 }
