@@ -1,4 +1,5 @@
 import 'package:fortress_earth/src/constants.dart';
+import 'package:fortress_earth/src/shared_state.dart';
 import 'package:fortress_earth/src/ui/dialogs/unit_actions_dialog.dart';
 import 'package:fortress_earth/src/ui/input.dart';
 import 'package:fortress_earth/src/ui/panels/chat_panel.dart';
@@ -35,19 +36,21 @@ class GameScreen extends Screen<Input> {
 
   bool _showNeedGradient = false;
 
-  GameScreen(this.world, this.units, {this.fullscreenCallback})
+  final SharedState state;
+
+  GameScreen(this.world, this.units, this.state, {this.fullscreenCallback})
       : _citiesPanel = CitiesPanel(mapOffsetLeft + mapWidth - 30,
-            mapOffsetTop + mapHeight - 4, 30, 16, world.cities),
+            mapOffsetTop + mapHeight - 4, 30, 16, world.cities, state),
         _unitPanel = UnitPanel(
-            mapOffsetLeft + 50, mapOffsetTop + mapHeight - 6, 47, 14, units);
+            mapOffsetLeft + 50, mapOffsetTop + mapHeight - 2, 47, 14, units);
 
   void activate(Screen<Input> popped, Object result) {
     if (result == null) return;
 
-    assert(result is SendDialogResult);
+    assert(result is GoDialogResult);
     assert(popped is UnitActionsDialog);
 
-    final dialogResult = result as SendDialogResult;
+    final dialogResult = result as GoDialogResult;
     dialogResult.unit.setDestination(dialogResult.destination.pos);
   }
 
@@ -72,11 +75,11 @@ class GameScreen extends Screen<Input> {
     return true;
   }
 
-
   bool keyDown(int keyCode, {bool shift, bool alt}) {
     for (final key in units.units.keys) {
       if (key == keyCode) {
-        ui.push(UnitActionsDialog(10, 10, world, units.units[key]));
+        ui.push(UnitActionsDialog(
+            50, mapOffsetTop + mapHeight - 6, world, units.units[key], state));
         return true;
       }
     }

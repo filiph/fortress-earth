@@ -1,6 +1,6 @@
 import 'package:fortress_earth/src/city.dart';
+import 'package:fortress_earth/src/shared_state.dart';
 import 'package:fortress_earth/src/ui/input.dart';
-import 'package:malison/malison.dart';
 import 'package:malison/malison_web.dart';
 
 class WhereDialog extends Screen<Input> {
@@ -8,7 +8,10 @@ class WhereDialog extends Screen<Input> {
 
   City _selectedCity;
 
-  WhereDialog(Iterable<City> cities) : cities = cities.toList(growable: false);
+  final SharedState state;
+
+  WhereDialog(Iterable<City> cities, this.state)
+      : cities = cities.toList(growable: false);
 
   bool get isTransparent => true;
 
@@ -16,6 +19,7 @@ class WhereDialog extends Screen<Input> {
     switch (input) {
       case Input.cancel:
         ui.pop();
+        state.citiesPanelActive = false;
         break;
 
       default:
@@ -31,6 +35,7 @@ class WhereDialog extends Screen<Input> {
         _selectedCity = city;
         // TODO: add animation (at least wait a while)
         ui.pop(_selectedCity);
+        state.citiesPanelActive = false;
         return true;
       }
     }
@@ -38,14 +43,8 @@ class WhereDialog extends Screen<Input> {
     return false;
   }
 
-  void render(Terminal fullTerminal) {
-    final terminal = fullTerminal.rect(
-        40, fullTerminal.height - 20, fullTerminal.width ~/ 2, 18);
-
-    terminal.clear();
-    terminal.writeAt(0, 0, "Select city...");
-    if (_selectedCity != null) {
-      terminal.writeAt(0, 1, "Selected city: $_selectedCity");
-    }
+  void update() {
+    // Make sure we show the city dialog.
+    state.citiesPanelActive = true;
   }
 }

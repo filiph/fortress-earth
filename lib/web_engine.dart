@@ -3,6 +3,7 @@ import 'dart:html' as html;
 import 'package:fortress_earth/src/city.dart';
 import 'package:fortress_earth/src/constants.dart';
 import 'package:fortress_earth/src/data/earth_terrain.dart';
+import 'package:fortress_earth/src/shared_state.dart';
 import 'package:fortress_earth/src/tile.dart';
 import 'package:fortress_earth/src/ui/game_screen.dart';
 import 'package:fortress_earth/src/ui/input.dart';
@@ -21,7 +22,7 @@ void runGame(html.CanvasElement canvas, {void Function() fullscreenCallback}) {
   ui.keyPress.bind(Input.cancel, KeyCode.escape);
   ui.keyPress.bind(Input.cancel, KeyCode.delete);
 
-  ui.keyPress.bind(Input.send, KeyCode.s);
+  ui.keyPress.bind(Input.go, KeyCode.g);
 
   ui.keyPress.bind(Input.fullscreen, KeyCode.f, alt: true);
 
@@ -51,7 +52,10 @@ void runGame(html.CanvasElement canvas, {void Function() fullscreenCallback}) {
 
   final units = Units();
 
-  ui.push(GameScreen(world, units, fullscreenCallback: fullscreenCallback));
+  final state = SharedState();
+
+  ui.push(
+      GameScreen(world, units, state, fullscreenCallback: fullscreenCallback));
 
   ui.handlingInput = true;
   ui.running = true;

@@ -38,7 +38,7 @@ class Input {
   static const longNW = Input("longNW");
 
   /// Verbs. These open UIs.
-  static const send = Input("send");
+  static const go = Input("send");
 
   /// Interface inputs.
   static const fullscreen = Input("fullscreen");

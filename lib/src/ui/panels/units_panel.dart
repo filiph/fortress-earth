@@ -20,7 +20,7 @@ class UnitPanel extends Panel {
       terminal.writeAt(2, y, unit.name);
 
       terminal.writeAt(
-          14, y, unit.hasArrived ? "STNDBY" : "TRANST", TextTheme.detail  );
+          14, y, unit.hasArrived ? "STNDBY" : "TRANST", TextTheme.detail);
 
       y++;
     }
