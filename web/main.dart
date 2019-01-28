@@ -29,16 +29,18 @@ void _toggleFullscreen() {
 
   const requestMethods = [
     "requestFullscreen",
-    "mozRequestFullScreen",
     "webkitRequestFullscreen",
-    "msRequestFullscreen"
+    "mozRequestFullScreen",
+    "msRequestFullscreen",
+    "oRequestFullscreen"
   ];
 
   const exitMethods = [
     "exitFullscreen",
-    "mozExitFullScreen",
     "webkitExitFullscreen",
-    "msExitFullscreen"
+    "mozCancelFullScreen",
+    "msExitFullscreen",
+    "oExitFullscreen"
   ];
 
   final methods = isFullscreen ? exitMethods : requestMethods;
