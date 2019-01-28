@@ -45,6 +45,24 @@ class World {
       return true;
     }(), "Cities must have unique keyCode callsigns.");
     _tiles = Array2D<Tile>.generated(mapWidth, mapHeight, generator);
+    _updateTilesWithClosestCities();
+  }
+  
+  void _updateTilesWithClosestCities() {
+    for (final tile in _tiles) {
+      // TODO: toroidal distance
+      // TODO(next): A* path, ideally pre-computed
+      City closest;
+      int closestDistance = 0xFFFFFFFF;
+      for (final candidate in _cities.values) {
+        final distance = (tile.pos - candidate.pos).lengthSquared;
+        if (distance < closestDistance) {
+          closest = candidate;
+          closestDistance = distance;
+        }
+      }
+      tile.closestCity = closest;
+    }
   }
 
   Map<Vec, City> get cities => _cities;
@@ -58,43 +76,30 @@ class World {
       final vec = Vec(x, y);
       final current = _tiles[vec];
       if (current.isOcean) continue;
-      final hood = _getNeighborhoodOf(vec);
+      final hood = _getNeighborhoodOf(current);
       current.updateGood(hood);
       current.updateGoodNeed(hood);
       current.updateGoodNeedGradient(hood);
     }
   }
 
-  Neighborhood _getNeighborhoodOf(Vec center) {
+  Neighborhood _getNeighborhoodOf(Tile center) {
     Tile getTileWrapped(Vec v) {
       final wrapped = _toroidalWrap(v);
       if (wrapped == null) return null;
       return _tiles[wrapped];
     }
 
-    // TODO: toroidal distance
-    // TODO(next): A* path, ideally pre-computed
-    City closest;
-    int closestDistance = 0xFFFFFFFF;
-    for (final candidate in _cities.values) {
-      final distance = (center - candidate.pos).lengthSquared;
-      if (distance < closestDistance) {
-        closest = candidate;
-        closestDistance = distance;
-      }
-    }
-
     return Neighborhood(
       center,
-      center.cardinalNeighbors
+      center.pos.cardinalNeighbors
           .map(getTileWrapped)
           .where((t) => t != null)
           .toList(growable: false),
-      center.intercardinalNeighbors
+      center.pos.intercardinalNeighbors
           .map(getTileWrapped)
           .where((t) => t != null)
           .toList(growable: false),
-      closest,
       mapWidth,
       mapHeight,
     );

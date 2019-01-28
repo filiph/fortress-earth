@@ -5,19 +5,21 @@ import 'package:fortress_earth/src/tile.dart';
 import 'package:piecemeal/piecemeal.dart';
 
 class Neighborhood {
-  /// The discounted effect of intercandinal neighbours (being farther away
+  /// The discounted effect of intercardinal neighbours (being farther away
   /// than cardinal neighbors).
-  static const double intercandinalDiscount = 1 / sqrt2;
+  static const double intercardinalDiscount = 1 / sqrt2;
 
   static const infiniteDistance = 0xFFFFFFFF;
 
-  final City closestCity;
+  City get closestCity => center.closestCity;
 
   final int worldWidth;
 
   final int worldHeight;
 
-  final Vec pos;
+  final Tile center;
+
+  Vec get pos => center.pos;
 
   final List<Tile> _cardinalNeighbors;
 
@@ -26,11 +28,15 @@ class Neighborhood {
   Iterable<Tile> get neighbors =>
       _cardinalNeighbors.followedBy(_intercardinalNeighbors);
 
+  Iterable<Tile> get sameCityNeighbors {
+    if (closestCity == null) return neighbors;
+    return neighbors.where((t) => t.closestCity == closestCity);
+  }
+
   Neighborhood(
-    this.pos,
+    this.center,
     this._cardinalNeighbors,
     this._intercardinalNeighbors,
-    this.closestCity,
     this.worldWidth,
     this.worldHeight,
   );
@@ -58,12 +64,12 @@ class Neighborhood {
 
   double get evil =>
       _cardinalNeighbors.map((t) => t.evil).fold(0, sum) +
-      intercandinalDiscount *
+      intercardinalDiscount *
           _intercardinalNeighbors.map((t) => t.evil).fold<int>(0, sum);
 
   double get good =>
       goodInCardinals +
-      intercandinalDiscount *
+      intercardinalDiscount *
           _intercardinalNeighbors.map((t) => t.good).fold<int>(0, sum);
 
   /// Sum of good units in cardinal neighbors.

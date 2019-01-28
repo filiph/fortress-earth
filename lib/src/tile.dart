@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:fortress_earth/src/city.dart';
 import 'package:fortress_earth/src/constants.dart';
 import 'package:fortress_earth/src/neighborhood.dart';
 import 'package:malison/malison.dart';
@@ -11,6 +12,9 @@ class Tile {
   final int roughness;
   final Vec pos;
   final Color backgroundColor;
+
+  /// City that influences this tile.
+  City closestCity;
 
   /// When foreground is not needed to show units, we create a shade
   /// of [backgroundColor] to show.
@@ -105,27 +109,17 @@ class Tile {
     // Short-circuit ocean tiles: they can't update.
     if (isOcean) return;
 
-    // Take over neutral tiles.
-    if (isNeutral &&
-        hood.distanceSquaredToCity <= maxDeploymentRange * maxDeploymentRange) {
-      // For a tile to be taken over, it must be adjacent to other good ones.
-      final goodNeighbors = hood.neighborsWithGoodInThem;
-      if (goodNeighbors.length > 0) {
-        // The less neighbors, the smaller chance we'll take over this tile.
-        if (_random.nextInt(8) < goodNeighbors.length) {
-          for (final neighbor in goodNeighbors) {
-            int contingent = neighbor.good ~/ 2;
-            good += contingent;
-            neighbor.good -= contingent;
-          }
-        }
-      }
-    }
-
     // Move with the need gradient.
     if (isGood) {
       final neediestTile = hood.neighbors.fold<Tile>(null, (prev, tile) {
-        if (!tile.isGood) return prev;
+        if (tile.isEvil || tile.isOcean) return prev;
+        if (tile.closestCity != closestCity) return prev;
+        if (tile.closestCity != null &&
+            (tile.closestCity.pos - tile.pos).lengthSquared >
+                maxDeploymentRange * maxDeploymentRange) {
+          // No movement beyond max deployment range.
+          return prev;
+        }
         if (prev == null) return tile;
         if (tile.goodNeedGradient > prev.goodNeedGradient) return tile;
         return prev;
@@ -153,16 +147,31 @@ class Tile {
   }
 
   void updateGoodNeed(Neighborhood hood) {
+    goodNeed = 0;
+
+    // First, compute need of this particular square.
     final neutralNeighbors = hood.neighbors.where((t) => t.isNeutral).length;
-    final evil = hood.evil.ceil();
-    final good = hood.good.floor();
-    if (hood.goodIsWinning) {
-      goodNeed = 1 + neutralNeighbors + evil - good;
-    } else {
-      // Evil is winning.
-      goodNeed =
-          1 + neutralNeighbors + ((evil - good) * dominanceCoefficient).ceil();
+    if (isNeutral) {
+      // Every neutral square automatically gets a goodNeed.
+      goodNeed += 1;
+      // Every neutral field surrounded by many good neighbors gets a boost.
+      // This makes sure we're filling in the gaps.
+      if (hood.neighborsWithGoodInThem.length > neutralNeighbors) {
+        goodNeed += 5;
+      }
     }
+
+    if (isEvil) {
+      goodNeed += (evil * dominanceCoefficient).ceil();
+    }
+
+    // Second, consider the hood (if there's many units around, we might not
+    // need that many more.
+    final hoodEvil = hood.evil.ceil();
+    final hoodGood = hood.good.floor();
+    // The evil of the hood is not as important as the one on this tile.
+    const hoodCoefficient = 0.2;
+    goodNeed += ((hoodEvil - hoodGood) * hoodCoefficient).floor();
 
     if (hood.closestCity != null && hood.closestCity.pos == pos) {
       // We're at the city tile. We might need lots of good if there's
