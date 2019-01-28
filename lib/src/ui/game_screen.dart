@@ -160,6 +160,8 @@ class GameScreen extends Screen<Input> {
     terminal.writeAt(width - 40, 0, "  render: ${renderMilliseconds}ms  ");
     terminal.writeAt(width - 20, 0, "  update: ${updateMilliseconds}ms  ");
 
+    //terminal.writeAt(width - 30, 0, "  Fortress Earth - tech demo  ");
+
     _latestRenderTime = _stopwatch.elapsedMicroseconds;
     _stopwatch.stop();
   }
