@@ -134,6 +134,10 @@ class Tile {
       if (neediestTile != null &&
           neediestTile.goodNeedGradient > goodNeedGradient) {
         int contingent = good ~/ 2;
+        if (hood.closestCity?.isInCompleteWithdrawal ?? false) {
+          // Move everything if there are no more units in the closest city.
+          contingent = good;
+        }
         neediestTile.good += contingent;
         good -= contingent;
       }

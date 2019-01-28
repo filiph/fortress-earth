@@ -41,12 +41,22 @@ class City {
   /// the field. This cannot be a negative number.
   int get availableUnits => max(0, _sumUnitStrength - _releasedUnits);
 
+  /// Returns `true` if city is withdrawing all units.
+  bool get isInCompleteWithdrawal => _unitDeficitProportion == 1.0;
+
   /// Units that were released from this city but need to get back.
   /// For example, the unit that brought them has left the city.
   int get unitDeficit => max(0, _releasedUnits - _sumUnitStrength);
 
   int get _sumUnitStrength =>
       _units.map((unit) => unit.strength).fold(0, (a, b) => a + b);
+
+  /// The percentage of units out there that need to be brought back.
+  double get _unitDeficitProportion {
+    final sum = _sumUnitStrength;
+    if (_releasedUnits == 0) return 0;
+    return 1 - sum / _releasedUnits;
+  }
 
   /// Deploys [unit] in this city.
   void deploy(Unit unit) {
