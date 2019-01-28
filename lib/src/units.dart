@@ -1,9 +1,12 @@
+import 'package:fortress_earth/src/city.dart';
 import 'package:fortress_earth/src/world.dart';
 import 'package:malison/malison.dart';
 import 'package:piecemeal/piecemeal.dart';
 
 class Unit {
   final int keyCode;
+
+  int strength = 500;
 
   final String name;
 
@@ -14,6 +17,8 @@ class Unit {
 
   Vec _destination = Vec.zero;
 
+  City _deployedAt;
+
   int _beforeNextMove = 0;
 
   /// The lesser this numbers, the faster the unit will travel.
@@ -23,13 +28,20 @@ class Unit {
     _destination = initialDestination ?? _pos;
   }
 
+  City get deployedAt => _deployedAt;
+
   bool get hasArrived => _destination == _pos;
 
   Vec get pos => _pos;
 
-  void setDestination(Vec vec) => _destination = vec;
+  void setDestination(Vec vec) {
+    if (_deployedAt != null) {
+      _deployedAt.release(this);
+    }
+    _destination = vec;
+  }
 
-  void updatePosition() {
+  void updatePosition(World world) {
     if (hasArrived) return;
 
     _beforeNextMove -= 1;
@@ -39,6 +51,12 @@ class Unit {
     _pos += direction;
 
     _beforeNextMove = ticksPerMove;
+
+    if (hasArrived) {
+      final city = world.cities[pos];
+      _deployedAt = city;
+      _deployedAt.deploy(this);
+    }
   }
 }
 
@@ -63,14 +81,7 @@ class Units {
 
   void update(World world) {
     for (final unit in units.values) {
-      if (unit.hasArrived) continue;
-      unit.updatePosition();
-
-      // Hack: see if unit has arrived just now. Better to have a callback
-      //       or assign the unit to the city somehow.
-      if (unit.hasArrived) {
-        world.cities[unit.pos].deploy(unit);
-      }
+      unit.updatePosition(world);
     }
   }
 }

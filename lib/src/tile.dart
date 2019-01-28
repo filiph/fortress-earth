@@ -77,16 +77,26 @@ class Tile {
     }
   }
 
-  bool get isEvil => evil > 0;
+  bool get isEvil {
+    assert(evil >= 0, "evil cannot be negative: $this");
+    return evil > 0;
+  }
 
-  bool get isGood => good > 0;
+  bool get isGood {
+    assert(good >= 0, "good cannot be negative: $this");
+    return good > 0;
+  }
 
   bool get isNeutral => good == 0 && evil == 0 && !isOcean;
 
   bool get isOcean => roughness == oceanRoughness;
 
   @override
-  String toString() => 'Tile<good=$good,evil=$evil,roughness=$roughness>';
+  String toString() => 'Tile<'
+      'x=${pos.x},y=${pos.y},'
+      'good=$good,evil=$evil,roughness=$roughness,'
+      'ocean=$isOcean'
+      '>';
 
   void updateGood(Neighborhood hood) {
     if (isEvil) {
@@ -131,37 +141,45 @@ class Tile {
       }
     }
 
-    // Now ask for reinforcements.
     if (hood.closestCity == null) return;
+
+    // Now ask for reinforcements.
     good += hood.closestCity.requestUnits(this, hood);
+
+    // Or offer good units back if we're at the place.
+    good -= hood.closestCity.offerUnits(this, good);
   }
 
   void updateGoodNeed(Neighborhood hood) {
-    if (!isGood) {
-      goodNeed = 0;
-      return;
-    }
     final neutralNeighbors = hood.neighbors.where((t) => t.isNeutral).length;
     final evil = hood.evil.ceil();
     final good = hood.good.floor();
     if (hood.goodIsWinning) {
       goodNeed = 1 + neutralNeighbors + evil - good;
-      return;
+    } else {
+      // Evil is winning.
+      goodNeed =
+          1 + neutralNeighbors + ((evil - good) * dominanceCoefficient).ceil();
     }
 
-    // Evil is winning.
-    goodNeed =
-        1 + neutralNeighbors + ((evil - good) * dominanceCoefficient).ceil();
+    if (hood.closestCity != null && hood.closestCity.pos == pos) {
+      // We're at the city tile. We might need lots of good if there's
+      // unit deficit (e.g. a unit just left the city).
+      goodNeed += hood.closestCity.unitDeficit;
+    }
   }
 
   void updateGoodNeedGradient(Neighborhood hood) {
-    final goodNeighbors = hood.neighborsWithGoodInThem;
-    if (goodNeighbors.length > 0) {
-      final totalGoodNeedGradient = goodNeighbors.fold<double>(
+    final landNeighbors =
+        hood.neighbors.where((t) => !t.isOcean).toList(growable: false);
+    if (landNeighbors.length > 0) {
+      final totalGoodNeedGradient = landNeighbors.fold<double>(
           0, (prev, tile) => prev + tile.goodNeedGradient);
-      final average = totalGoodNeedGradient / goodNeighbors.length;
-      const spaceDecay = 0.5;
-      goodNeedGradient += average * spaceDecay;
+      final average = totalGoodNeedGradient / landNeighbors.length;
+      final maxNeedGradient = landNeighbors.fold<double>(
+          0, (prev, tile) => max(prev, tile.goodNeedGradient));
+      const spaceDecay = 0.8;
+      goodNeedGradient += maxNeedGradient * spaceDecay;
     }
 
     // Re-pump local need into the gradient.

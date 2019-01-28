@@ -24,18 +24,54 @@ class City {
 
   final int keyCode;
 
+  final List<Unit> _units = [];
+
   final Vec pos;
 
-  int _availableUnits = 0;
+  /// Keeps track of the units that the city provided from the pool in [_units].
+  ///
+  /// When this is lower than [availableUnits], then the city can release
+  /// more units. When it's higher, the city will take them back.
+  int _releasedUnits = 0;
 
   City(this.name, this.pos, {int keyCode})
       : keyCode = keyCode ?? name.codeUnitAt(0);
 
-  int get availableUnits => _availableUnits;
+  /// Units currently at this city that are available to be released to
+  /// the field. This cannot be a negative number.
+  int get availableUnits => max(0, _sumUnitStrength - _releasedUnits);
+
+  /// Units that were released from this city but need to get back.
+  /// For example, the unit that brought them has left the city.
+  int get unitDeficit => max(0, _releasedUnits - _sumUnitStrength);
+
+  int get _sumUnitStrength =>
+      _units.map((unit) => unit.strength).fold(0, (a, b) => a + b);
 
   /// Deploys [unit] in this city.
   void deploy(Unit unit) {
-    _availableUnits += 500;
+    assert(!_units.contains(unit));
+    assert(unit.deployedAt == this);
+    _units.add(unit);
+  }
+
+  /// Offer at most [offeredGood] units to this city.
+  ///
+  /// The method will return the number of [Tile.good] that it will take.
+  /// The tile is responsible for subtracting it.
+  int offerUnits(Tile tile, int offeredGood) {
+    // Only city tiles can take back units.
+    if (tile.pos != pos) return 0;
+
+    final unitsTaken = min(offeredGood, unitDeficit);
+    _releasedUnits -= unitsTaken;
+    return unitsTaken;
+  }
+
+  void release(Unit unit) {
+    assert(_units.contains(unit));
+    assert(unit.deployedAt == this);
+    _units.remove(unit);
   }
 
   /// Claims units that cannot be available elsewhere. Called by tiles.
@@ -48,24 +84,17 @@ class City {
     if (distance <= 2) {
       final request = hood.evil.ceil() + 10;
       final distanceModifiedRequest = request / (1 + distance);
-      return _computeAndSubstractGiven(
-          hood.pos, distanceModifiedRequest.round());
+      return _computeAndSubstractGiven(distanceModifiedRequest.round());
     }
 
     // By default, we don't give any units.
     return 0;
   }
 
-  int _computeAndSubstractGiven(Vec tileCenter, int requested) {
-    final distance = (tileCenter - pos).length;
-    const easyDistance = 5;
-    const maxDistance = 15;
-    final double logisticalCoefficient =
-        lerpDouble(distance, easyDistance, maxDistance, 0, 1);
-    final willingToGive =
-        (1 - logisticalCoefficient) * min(_availableUnits, maxUnitsPerRequest);
+  int _computeAndSubstractGiven(int requested) {
+    final willingToGive = min(availableUnits, maxUnitsPerRequest);
     final given = min(willingToGive.round(), requested);
-    _availableUnits -= given;
+    _releasedUnits += given;
     return given;
   }
 }

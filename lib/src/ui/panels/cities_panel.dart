@@ -27,7 +27,8 @@ class CitiesPanel extends Panel {
     int y = 2;
     for (final city in _cities) {
       terminal.writeAt(0, y, "${city.name}");
-      terminal.writeAt(12, y, city.availableUnits.toString().padLeft(6) + 'K');
+      terminal.writeAt(10, y, city.availableUnits.toString().padLeft(5));
+      terminal.writeAt(16, y, city.unitDeficit.toString().padLeft(5));
       terminal.writeAt(22, y, 'OK', TextTheme.ok);
 
       y++;
