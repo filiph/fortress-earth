@@ -60,8 +60,6 @@ class Tile {
         neutralForegroundColor =
             backgroundColor.blend(Color.black, 0.3 + _random.nextDouble() / 3);
 
-  int get diff => good - evil;
-
   Color get foregroundColor {
     if (isGood) {
       final value = 150 + (good * 10).clamp(0, 100);
@@ -135,7 +133,7 @@ class Tile {
 
       if (neediestTile != null &&
           neediestTile.goodNeedGradient > goodNeedGradient) {
-        int contingent = diff ~/ 2;
+        int contingent = good ~/ 2;
         neediestTile.good += contingent;
         good -= contingent;
       }
