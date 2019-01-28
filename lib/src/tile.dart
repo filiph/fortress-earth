@@ -125,7 +125,7 @@ class Tile {
     }
 
     // Move with the need gradient.
-    if (isGood && goodNeed < 0) {
+    if (isGood) {
       final neediestTile = hood.neighbors.fold<Tile>(null, (prev, tile) {
         if (!tile.isGood) return prev;
         if (prev == null) return tile;
