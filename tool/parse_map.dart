@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:fortress_earth/src/constants.dart';
-import 'package:fortress_earth/src/math.dart';
 import 'package:image/image.dart';
 import 'package:piecemeal/piecemeal.dart';
 
@@ -59,7 +58,7 @@ void main(List<String> args) {
       final imageX = x * xRatio;
       final imageY = y * yRatio;
       final pixel = image.getPixelCubic(imageX, imageY);
-      final vecHashCode = hashVec(Vec(x, y));
+      final vecHashCode = Vec(x, y).hashCode;
       final rgb = pixel & 0xFFFFFF;
       print("  $vecHashCode: $rgb,");
     }
@@ -89,7 +88,7 @@ void main(List<String> args) {
 //         Sample another place just in case we're close to land.
 //        pixel = waterImage.getPixelCubic(imageX + xRatio / 3, imageY + yRatio / 3);
 //      }
-      final vecHashCode = hashVec(Vec(x, y));
+      final vecHashCode = Vec(x, y).hashCode;
       final isOcean = pixel == waterTileColor;
       print("  $vecHashCode: $isOcean,");
     }

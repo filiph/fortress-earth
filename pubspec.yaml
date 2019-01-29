@@ -9,7 +9,7 @@ environment:
 
 dependencies:
   malison: ^0.11.3
-  piecemeal: ^0.4.1
+  piecemeal: ^0.4.2
 
 dev_dependencies:
   args: ^1.5.1
