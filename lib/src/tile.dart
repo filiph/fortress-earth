@@ -129,7 +129,7 @@ class Tile {
           neediestTile.goodNeedGradient > goodNeedGradient) {
         int contingent = good ~/ 2;
         if (hood.closestCity?.isInCompleteWithdrawal ?? false) {
-          // Move everything if there are no more units in the closest city.
+          // Move everything if there are no more armies in the closest city.
           contingent = good;
         }
         neediestTile.good += contingent;
@@ -175,7 +175,7 @@ class Tile {
 
     if (hood.closestCity != null && hood.closestCity.pos == pos) {
       // We're at the city tile. We might need lots of good if there's
-      // unit deficit (e.g. a unit just left the city).
+      // unit deficit (e.g. an army just left the city).
       goodNeed += hood.closestCity.unitDeficit;
     }
   }

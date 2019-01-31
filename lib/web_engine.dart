@@ -6,7 +6,7 @@ import 'package:fortress_earth/src/shared_state.dart';
 import 'package:fortress_earth/src/tile.dart';
 import 'package:fortress_earth/src/ui/game_screen.dart';
 import 'package:fortress_earth/src/ui/input.dart';
-import 'package:fortress_earth/src/units.dart';
+import 'package:fortress_earth/src/armies.dart';
 import 'package:fortress_earth/src/world.dart';
 import 'package:malison/malison.dart';
 import 'package:malison/malison_web.dart';
@@ -34,12 +34,12 @@ void runGame(html.CanvasElement canvas, {void Function() fullscreenCallback}) {
         backgroundColor: getTerrainColor(v), evil: v == Vec(70, 13) ? 100 : 0),
   );
 
-  final units = Units();
+  final armies = Armies();
 
   final state = SharedState();
 
   ui.push(
-      GameScreen(world, units, state, fullscreenCallback: fullscreenCallback));
+      GameScreen(world, armies, state, fullscreenCallback: fullscreenCallback));
 
   ui.handlingInput = true;
   ui.running = true;

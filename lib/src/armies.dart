@@ -3,7 +3,7 @@ import 'package:fortress_earth/src/world.dart';
 import 'package:malison/malison.dart';
 import 'package:piecemeal/piecemeal.dart';
 
-class Unit {
+class Army {
   final int keyCode;
 
   int strength = 500;
@@ -24,7 +24,7 @@ class Unit {
   /// The lesser this numbers, the faster the unit will travel.
   final ticksPerMove = 10;
 
-  Unit(this.keyCode, this.name, this.color, {Vec initialDestination}) {
+  Army(this.keyCode, this.name, this.color, {Vec initialDestination}) {
     _destination = initialDestination ?? _pos;
   }
 
@@ -60,28 +60,28 @@ class Unit {
   }
 }
 
-class Units {
-  final Map<int, Unit> units = Map.unmodifiable({
-    KeyCode.one: Unit(KeyCode.one, "Marines", Color.lightGreen,
+class Armies {
+  final Map<int, Army> armies = Map.unmodifiable({
+    KeyCode.one: Army(KeyCode.one, "Marines", Color.lightGreen,
         initialDestination: Vec(92, 18)),
-    KeyCode.two: Unit(KeyCode.two, "Marines", Color.lightGreen,
+    KeyCode.two: Army(KeyCode.two, "Marines", Color.lightGreen,
         initialDestination: Vec(37, 26)),
-    KeyCode.three: Unit(KeyCode.three, "Marines", Color.lightGreen),
-    KeyCode.four: Unit(KeyCode.four, "Army", Color.lightBlue),
-    KeyCode.five: Unit(KeyCode.five, "Army", Color.lightBlue,
+    KeyCode.three: Army(KeyCode.three, "Marines", Color.lightGreen),
+    KeyCode.four: Army(KeyCode.four, "Army", Color.lightBlue),
+    KeyCode.five: Army(KeyCode.five, "Army", Color.lightBlue,
         initialDestination: Vec(66, 12)),
-    KeyCode.six: Unit(KeyCode.six, "Army", Color.lightBlue),
-    KeyCode.seven: Unit(KeyCode.seven, "Air Force", Color.lightAqua),
-    KeyCode.eight: Unit(KeyCode.eight, "Squad", Color.lightPurple,
+    KeyCode.six: Army(KeyCode.six, "Army", Color.lightBlue),
+    KeyCode.seven: Army(KeyCode.seven, "Air Force", Color.lightAqua),
+    KeyCode.eight: Army(KeyCode.eight, "Squad", Color.lightPurple,
         initialDestination: Vec(77, 17)),
-    KeyCode.nine: Unit(KeyCode.nine, "Squad", Color.lightPurple),
-    KeyCode.zero: Unit(KeyCode.zero, "HQ", Color.lightGold,
+    KeyCode.nine: Army(KeyCode.nine, "Squad", Color.lightPurple),
+    KeyCode.zero: Army(KeyCode.zero, "HQ", Color.lightGold,
         initialDestination: Vec(40, 13)),
   });
 
   void update(World world) {
-    for (final unit in units.values) {
-      unit.updatePosition(world);
+    for (final army in armies.values) {
+      army.updatePosition(world);
     }
   }
 }

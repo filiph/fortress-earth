@@ -1,28 +1,28 @@
 import 'package:fortress_earth/src/city.dart';
 import 'package:fortress_earth/src/shared_state.dart';
-import 'package:fortress_earth/src/ui/dialogs/where.dart';
+import 'package:fortress_earth/src/ui/dialogs/where_dialog.dart';
 import 'package:fortress_earth/src/ui/input.dart';
 import 'package:fortress_earth/src/ui/panels/commands_panel.dart';
 import 'package:fortress_earth/src/ui/panels/panel.dart';
 import 'package:fortress_earth/src/ui/theme.dart';
-import 'package:fortress_earth/src/units.dart';
+import 'package:fortress_earth/src/armies.dart';
 import 'package:fortress_earth/src/world.dart';
 import 'package:malison/malison.dart';
 import 'package:malison/malison_web.dart';
 
 class GoDialogResult {
-  final Unit unit;
+  final Army army;
   final City destination;
 
-  const GoDialogResult(this.unit, this.destination);
+  const GoDialogResult(this.army, this.destination);
 }
 
-class UnitActionsDialog extends Screen<Input> {
+class ArmyActionsDialog extends Screen<Input> {
   final World world;
 
-  // TODO: allow selecting more units - List<Unit>
-  //       need a way to notify GameScreen that more units were added
-  final Unit unit;
+  // TODO: allow selecting more armies - List<Army>
+  //       need a way to notify GameScreen that more armies were added
+  final Army army;
 
   Input _selectedInput;
 
@@ -32,8 +32,8 @@ class UnitActionsDialog extends Screen<Input> {
 
   final SharedState state;
 
-  UnitActionsDialog(
-      this._screenX, this._screenY, this.world, this.unit, this.state);
+  ArmyActionsDialog(
+      this._screenX, this._screenY, this.world, this.army, this.state);
 
   bool get isTransparent => true;
 
@@ -43,7 +43,7 @@ class UnitActionsDialog extends Screen<Input> {
     assert(popped is WhereDialog);
     assert(_selectedInput == Input.go);
 
-    ui.pop(GoDialogResult(unit, result as City));
+    ui.pop(GoDialogResult(army, result as City));
   }
 
   bool handleInput(Input input) {
@@ -71,7 +71,7 @@ class UnitActionsDialog extends Screen<Input> {
         _screenY,
         47,
         5,
-        unit.name,
+        army.name,
         ["Go", "Upgrade", "Heal", "Interrogate"],
         _selectedInput == null
             ? TextTheme.important

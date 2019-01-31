@@ -47,7 +47,7 @@ class World {
     _tiles = Array2D<Tile>.generated(mapWidth, mapHeight, generator);
     _updateTilesWithClosestCities();
   }
-  
+
   void _updateTilesWithClosestCities() {
     for (final tile in _tiles) {
       // TODO: toroidal distance

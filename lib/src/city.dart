@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:fortress_earth/src/neighborhood.dart';
 import 'package:fortress_earth/src/tile.dart';
-import 'package:fortress_earth/src/units.dart';
+import 'package:fortress_earth/src/armies.dart';
 import 'package:piecemeal/piecemeal.dart';
 
 /// Remaps [value] within the range [min]-[max] to the output range
@@ -24,11 +24,12 @@ class City {
 
   final int keyCode;
 
-  final List<Unit> _units = [];
+  final List<Army> _armies = [];
 
   final Vec pos;
 
-  /// Keeps track of the units that the city provided from the pool in [_units].
+  /// Keeps track of the units that the city provided from the pool
+  /// in [_armies].
   ///
   /// When this is lower than [availableUnits], then the city can release
   /// more units. When it's higher, the city will take them back.
@@ -42,20 +43,20 @@ class City {
   int get availableUnits => max(0, _sumUnitStrength - _releasedUnits);
 
   /// Returns `true` if city is withdrawing all units.
-  bool get isInCompleteWithdrawal => _units.isEmpty;
+  bool get isInCompleteWithdrawal => _armies.isEmpty;
 
   /// Units that were released from this city but need to get back.
   /// For example, the unit that brought them has left the city.
   int get unitDeficit => max(0, _releasedUnits - _sumUnitStrength);
 
   int get _sumUnitStrength =>
-      _units.map((unit) => unit.strength).fold(0, (a, b) => a + b);
+      _armies.map((unit) => unit.strength).fold(0, (a, b) => a + b);
 
-  /// Deploys [unit] in this city.
-  void deploy(Unit unit) {
-    assert(!_units.contains(unit));
-    assert(unit.deployedAt == this);
-    _units.add(unit);
+  /// Deploys [army] in this city.
+  void deploy(Army army) {
+    assert(!_armies.contains(army));
+    assert(army.deployedAt == this);
+    _armies.add(army);
   }
 
   /// Offer at most [offeredGood] units to this city.
@@ -71,10 +72,10 @@ class City {
     return unitsTaken;
   }
 
-  void release(Unit unit) {
-    assert(_units.contains(unit));
-    assert(unit.deployedAt == this);
-    _units.remove(unit);
+  void release(Army army) {
+    assert(_armies.contains(army));
+    assert(army.deployedAt == this);
+    _armies.remove(army);
   }
 
   /// Claims units that cannot be available elsewhere. Called by tiles.

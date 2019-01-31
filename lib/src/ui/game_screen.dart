@@ -1,11 +1,11 @@
 import 'package:fortress_earth/src/constants.dart';
 import 'package:fortress_earth/src/shared_state.dart';
-import 'package:fortress_earth/src/ui/dialogs/unit_actions_dialog.dart';
+import 'package:fortress_earth/src/ui/dialogs/army_actions_dialog.dart';
 import 'package:fortress_earth/src/ui/input.dart';
 import 'package:fortress_earth/src/ui/panels/chat_panel.dart';
 import 'package:fortress_earth/src/ui/panels/cities_panel.dart';
-import 'package:fortress_earth/src/ui/panels/units_panel.dart';
-import 'package:fortress_earth/src/units.dart';
+import 'package:fortress_earth/src/ui/panels/armies_panel.dart';
+import 'package:fortress_earth/src/armies.dart';
 import 'package:fortress_earth/src/world.dart';
 import 'package:malison/malison.dart';
 import 'package:malison/malison_web.dart';
@@ -14,7 +14,7 @@ import 'package:piecemeal/piecemeal.dart';
 class GameScreen extends Screen<Input> {
   final World world;
 
-  final Units units;
+  final Armies units;
 
   final void Function() fullscreenCallback;
 
@@ -48,10 +48,10 @@ class GameScreen extends Screen<Input> {
     if (result == null) return;
 
     assert(result is GoDialogResult);
-    assert(popped is UnitActionsDialog);
+    assert(popped is ArmyActionsDialog);
 
     final dialogResult = result as GoDialogResult;
-    dialogResult.unit.setDestination(dialogResult.destination.pos);
+    dialogResult.army.setDestination(dialogResult.destination.pos);
   }
 
   bool handleInput(Input input) {
@@ -76,10 +76,10 @@ class GameScreen extends Screen<Input> {
   }
 
   bool keyDown(int keyCode, {bool shift, bool alt}) {
-    for (final key in units.units.keys) {
+    for (final key in units.armies.keys) {
       if (key == keyCode) {
-        ui.push(UnitActionsDialog(
-            50, mapOffsetTop + mapHeight - 6, world, units.units[key], state));
+        ui.push(ArmyActionsDialog(
+            50, mapOffsetTop + mapHeight - 6, world, units.armies[key], state));
         return true;
       }
     }
@@ -139,7 +139,7 @@ class GameScreen extends Screen<Input> {
     }
 
     // Units on map.
-    for (final unit in units.units.values) {
+    for (final unit in units.armies.values) {
       terminal.drawChar(mapOffsetLeft + unit.pos.x, mapOffsetTop + unit.pos.y,
           unit.keyCode, Color.black, unit.color);
     }
