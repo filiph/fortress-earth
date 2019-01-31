@@ -21,7 +21,7 @@ class Tile {
   final Color neutralForegroundColor;
 
   /// Currently stationed good units.
-  int good;
+  int units;
 
   /// Currently stationed evil units.
   int evil;
@@ -30,43 +30,44 @@ class Tile {
   /// the amount of good units it needs. If positive, the situation
   /// could be improved. If negative, the tile could send some units elsewhere.
   ///
-  /// This updates every time [updateGood] is called, at the end.
+  /// This updates every time [updateUnits] is called, at the end.
   ///
   /// It only depends on needs local to this tile. Contrast to
-  /// [goodNeedGradient].
-  int goodNeed = 0;
+  /// [unitDemandGradient].
+  int unitDemand = 0;
 
-  /// Propagated need. When tile A has higher [goodNeedGradient] than tile B,
+  /// Propagated need. When tile A has higher [unitDemandGradient] than tile B,
   /// then units should move from B to A.
   ///
-  /// On every [updateGood], a set portion of neighbors'
-  /// [goodNeedGradient]s are consumed by this tile (whether they are
-  /// positive or negative). Moreover, this tile's [goodNeedGradient] is
-  /// also incremented by the current [goodNeed].
+  /// On every [updateUnits], a set portion of neighbors'
+  /// [unitDemandGradient]s are consumed by this tile (whether they are
+  /// positive or negative). Moreover, this tile's [unitDemandGradient] is
+  /// also incremented by the current [unitDemand].
   ///
   /// This way, tiles that are in trouble pump this information into the
   /// gradient.
-  double goodNeedGradient = 0;
+  double unitDemandGradient = 0;
 
   /// How far from the nearest city this tile is.
   ///
   /// The higher the number, the harder it is to get material to this tile.
+  /// TODO: either use or remove
   double goodLogisticsGradient = 0;
 
   Tile(
     this.pos,
     this.roughness, {
     this.backgroundColor = Color.purple,
-    this.good = 0,
+    this.units = 0,
     this.evil = 0,
-  })  : assert(
-            good == 0 || evil == 0, "Cannot have tile with both good and evil"),
+  })  : assert(units == 0 || evil == 0,
+            "Cannot have tile with both good and evil"),
         neutralForegroundColor =
             backgroundColor.blend(Color.black, 0.3 + _random.nextDouble() / 3);
 
   Color get foregroundColor {
     if (isGood) {
-      final value = 150 + (good * 10).clamp(0, 100);
+      final value = 150 + (units * 10).clamp(0, 100);
       return Color(value, value, value);
     } else if (isEvil) {
       final value = 150 + (evil * 10).clamp(0, 100);
@@ -85,22 +86,74 @@ class Tile {
   }
 
   bool get isGood {
-    assert(good >= 0, "good cannot be negative: $this");
-    return good > 0;
+    assert(units >= 0, "good cannot be negative: $this");
+    return units > 0;
   }
 
-  bool get isNeutral => good == 0 && evil == 0 && !isOcean;
+  bool get isNeutral => units == 0 && evil == 0 && !isOcean;
 
   bool get isOcean => roughness == oceanRoughness;
 
   @override
   String toString() => 'Tile<'
       'x=${pos.x},y=${pos.y},'
-      'good=$good,evil=$evil,roughness=$roughness,'
+      'good=$units,evil=$evil,roughness=$roughness,'
       'ocean=$isOcean'
       '>';
 
-  void updateGood(Neighborhood hood) {
+  void updateUnitDemand(Neighborhood hood) {
+    unitDemand = 0;
+
+    // First, compute need of this particular square.
+    final neutralNeighbors = hood.neighbors.where((t) => t.isNeutral).length;
+    if (isNeutral) {
+      // Every neutral square automatically gets a unitDemand.
+      unitDemand += 1;
+      // Every neutral field surrounded by many good neighbors gets a boost.
+      // This makes sure we're filling in the gaps.
+      if (hood.neighborsWithGoodInThem.length > neutralNeighbors) {
+        unitDemand += 5;
+      }
+    }
+
+    if (isEvil) {
+      unitDemand += (evil * dominanceCoefficient).ceil();
+    }
+
+    // Second, consider the hood (if there's many units around, we might not
+    // need that many more.
+    final hoodEvil = hood.evil.ceil();
+    final hoodGood = hood.good.floor();
+    // The evil of the hood is not as important as the one on this tile.
+    const hoodCoefficient = 0.2;
+    unitDemand += ((hoodEvil - hoodGood) * hoodCoefficient).floor();
+
+    if (hood.closestCity != null && hood.closestCity.pos == pos) {
+      // We're at the city tile. We might need lots of units if there's
+      // unit deficit (e.g. an army just left the city).
+      unitDemand += hood.closestCity.unitDeficit;
+    }
+  }
+
+  void updateUnitDemandGradient(Neighborhood hood) {
+    final landNeighbors =
+        hood.neighbors.where((t) => !t.isOcean).toList(growable: false);
+    if (landNeighbors.length > 0) {
+      final maxNeedGradient = landNeighbors.fold<double>(
+          0, (prev, tile) => max(prev, tile.unitDemandGradient));
+      const spaceDecay = 0.8;
+      unitDemandGradient += maxNeedGradient * spaceDecay;
+    }
+
+    // Re-pump local need into the gradient.
+    unitDemandGradient += unitDemand;
+
+    // Decay the gradient over time.
+    const timeDecay = 0.5;
+    unitDemandGradient *= timeDecay;
+  }
+
+  void updateUnits(Neighborhood hood) {
     if (isEvil) {
       // TODO: implement possible take over.
       return;
@@ -121,80 +174,28 @@ class Tile {
           return prev;
         }
         if (prev == null) return tile;
-        if (tile.goodNeedGradient > prev.goodNeedGradient) return tile;
+        if (tile.unitDemandGradient > prev.unitDemandGradient) return tile;
         return prev;
       });
 
       if (neediestTile != null &&
-          neediestTile.goodNeedGradient > goodNeedGradient) {
-        int contingent = good ~/ 2;
+          neediestTile.unitDemandGradient > unitDemandGradient) {
+        int contingent = units ~/ 2;
         if (hood.closestCity?.isInCompleteWithdrawal ?? false) {
           // Move everything if there are no more armies in the closest city.
-          contingent = good;
+          contingent = units;
         }
-        neediestTile.good += contingent;
-        good -= contingent;
+        neediestTile.units += contingent;
+        units -= contingent;
       }
     }
 
     if (hood.closestCity == null) return;
 
     // Now ask for reinforcements.
-    good += hood.closestCity.requestUnits(this, hood);
+    units += hood.closestCity.requestUnits(this, hood);
 
     // Or offer good units back if we're at the place.
-    good -= hood.closestCity.offerUnits(this, good);
-  }
-
-  void updateGoodNeed(Neighborhood hood) {
-    goodNeed = 0;
-
-    // First, compute need of this particular square.
-    final neutralNeighbors = hood.neighbors.where((t) => t.isNeutral).length;
-    if (isNeutral) {
-      // Every neutral square automatically gets a goodNeed.
-      goodNeed += 1;
-      // Every neutral field surrounded by many good neighbors gets a boost.
-      // This makes sure we're filling in the gaps.
-      if (hood.neighborsWithGoodInThem.length > neutralNeighbors) {
-        goodNeed += 5;
-      }
-    }
-
-    if (isEvil) {
-      goodNeed += (evil * dominanceCoefficient).ceil();
-    }
-
-    // Second, consider the hood (if there's many units around, we might not
-    // need that many more.
-    final hoodEvil = hood.evil.ceil();
-    final hoodGood = hood.good.floor();
-    // The evil of the hood is not as important as the one on this tile.
-    const hoodCoefficient = 0.2;
-    goodNeed += ((hoodEvil - hoodGood) * hoodCoefficient).floor();
-
-    if (hood.closestCity != null && hood.closestCity.pos == pos) {
-      // We're at the city tile. We might need lots of good if there's
-      // unit deficit (e.g. an army just left the city).
-      goodNeed += hood.closestCity.unitDeficit;
-    }
-  }
-
-  void updateGoodNeedGradient(Neighborhood hood) {
-    final landNeighbors =
-        hood.neighbors.where((t) => !t.isOcean).toList(growable: false);
-    if (landNeighbors.length > 0) {
-      final maxNeedGradient = landNeighbors.fold<double>(
-          0, (prev, tile) => max(prev, tile.goodNeedGradient));
-      const spaceDecay = 0.8;
-      goodNeedGradient += maxNeedGradient * spaceDecay;
-    }
-
-    // Re-pump local need into the gradient.
-    goodNeedGradient += goodNeed;
-
-    // Decay the gradient over time.
-    const timeDecay = 0.5;
-    goodNeedGradient *= timeDecay;
+    units -= hood.closestCity.offerUnits(this, units);
   }
 }

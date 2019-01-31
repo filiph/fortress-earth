@@ -59,15 +59,15 @@ class City {
     _armies.add(army);
   }
 
-  /// Offer at most [offeredGood] units to this city.
+  /// Offer at most [offeredUnits] units to this city.
   ///
-  /// The method will return the number of [Tile.good] that it will take.
+  /// The method will return the number of [Tile.units] that it will take.
   /// The tile is responsible for subtracting it.
-  int offerUnits(Tile tile, int offeredGood) {
+  int offerUnits(Tile tile, int offeredUnits) {
     // Only city tiles can take back units.
     if (tile.pos != pos) return 0;
 
-    final unitsTaken = min(offeredGood, unitDeficit);
+    final unitsTaken = min(offeredUnits, unitDeficit);
     _releasedUnits -= unitsTaken;
     return unitsTaken;
   }
