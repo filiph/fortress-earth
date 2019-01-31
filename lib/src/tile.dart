@@ -184,9 +184,6 @@ class Tile {
     final landNeighbors =
         hood.neighbors.where((t) => !t.isOcean).toList(growable: false);
     if (landNeighbors.length > 0) {
-      final totalGoodNeedGradient = landNeighbors.fold<double>(
-          0, (prev, tile) => prev + tile.goodNeedGradient);
-      final average = totalGoodNeedGradient / landNeighbors.length;
       final maxNeedGradient = landNeighbors.fold<double>(
           0, (prev, tile) => max(prev, tile.goodNeedGradient));
       const spaceDecay = 0.8;
