@@ -66,14 +66,17 @@ class City {
 
   /// Units of [army] that were released from this city but need to get back.
   /// For example, the army that brought them has left the city.
-  int getUnitDeficit(Army army) => max(0, _releasedUnits[army] - army.strength);
+  int getUnitDeficit(Army army) {
+    if (!_armies.contains(army)) return _releasedUnits[army];
+    return max(0, _releasedUnits[army] - army.strength);
+  }
 
   /// Returns `true` if city is withdrawing all units of [army].
   bool isInCompleteWithdrawal(Army army) => !_armies.contains(army);
 
   /// Offer at most [offeredUnits] units to this city.
   ///
-  /// The method will return the number of [Tile.units] that it will take.
+  /// The method will return the number of [Tile.unitsAll] that it will take.
   /// The tile is responsible for subtracting it.
   int offerUnits(Army army, Tile tile, int offeredUnits) {
     // Only city tiles can take back units.

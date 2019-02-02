@@ -114,7 +114,7 @@ class GameScreen extends Screen<Input> {
         Color foregroundColor;
         if (_showNeedGradient) {
           int index =
-              ((tile.unitDemandGradient.clamp(-100, 100) + 100) / 20).floor();
+              ((tile.unitDemandGradientDEBUG.clamp(-100, 100) + 100) / 20).floor();
           char = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9][index].toString();
         } else if (world.cities.containsKey(vec)) {
           char = '■';

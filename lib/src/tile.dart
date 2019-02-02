@@ -21,9 +21,6 @@ class Tile {
   /// of [backgroundColor] to show.
   final Color neutralForegroundColor;
 
-  /// Currently stationed good units.
-  int get units => _units.values.fold(0, (a, b) => a + b);
-
   /// Currently stationed evil units.
   int evil;
 
@@ -34,20 +31,20 @@ class Tile {
   /// This updates every time [updateUnits] is called, at the end.
   ///
   /// It only depends on needs local to this tile. Contrast to
-  /// [unitDemandGradient].
-  int unitDemand = 0;
+  /// [_unitDemandGradient].
+  final Map<Army, int> _unitDemand = Map<Army, int>();
 
-  /// Propagated need. When tile A has higher [unitDemandGradient] than tile B,
+  /// Propagated need. When tile A has higher [_unitDemandGradient] than tile B,
   /// then units should move from B to A.
   ///
   /// On every [updateUnits], a set portion of neighbors'
-  /// [unitDemandGradient]s are consumed by this tile (whether they are
-  /// positive or negative). Moreover, this tile's [unitDemandGradient] is
-  /// also incremented by the current [unitDemand].
+  /// [_unitDemandGradient]s are consumed by this tile (whether they are
+  /// positive or negative). Moreover, this tile's [_unitDemandGradient] is
+  /// also incremented by the current [_unitDemand].
   ///
   /// This way, tiles that are in trouble pump this information into the
   /// gradient.
-  double unitDemandGradient = 0;
+  final Map<Army, double> _unitDemandGradient = Map<Army, double>();
 
   /// How far from the nearest city this tile is.
   ///
@@ -68,7 +65,7 @@ class Tile {
 
   Color get foregroundColor {
     if (isGood) {
-      final value = 150 + (units * 10).clamp(0, 100);
+      final value = 150 + (unitsAll * 10).clamp(0, 100);
       return Color(value, value, value);
     } else if (isEvil) {
       final value = 150 + (evil * 10).clamp(0, 100);
@@ -87,23 +84,33 @@ class Tile {
   }
 
   bool get isGood {
-    assert(units >= 0, "good cannot be negative: $this");
-    return units > 0;
+    assert(unitsAll >= 0, "good cannot be negative: $this");
+    return unitsAll > 0;
   }
 
-  bool get isNeutral => units == 0 && evil == 0 && !isOcean;
+  bool get isNeutral => unitsAll == 0 && evil == 0 && !isOcean;
 
   bool get isOcean => roughness == oceanRoughness;
+
+  /// Just show the gradient of a single army, the HQ.
+  @deprecated
+  double get unitDemandGradientDEBUG =>
+      _unitDemandGradient[_unitDemandGradient.keys
+          .singleWhere((a) => a.name == 'HQ', orElse: () => null)] ??
+      0;
+
+  /// Currently stationed good units.
+  int get unitsAll => _units.values.fold(0, (a, b) => a + b);
 
   @override
   String toString() => 'Tile<'
       'x=${pos.x},y=${pos.y},'
-      'good=$units,evil=$evil,roughness=$roughness,'
+      'good=$unitsAll,evil=$evil,roughness=$roughness,'
       'ocean=$isOcean'
       '>';
 
   void updateUnitDemand(Neighborhood hood, Army army) {
-    unitDemand = 0;
+    int unitDemand = 0;
 
     // First, compute need of this particular square.
     final neutralNeighbors = hood.neighbors.where((t) => t.isNeutral).length;
@@ -132,27 +139,30 @@ class Tile {
     if (hood.closestCity != null && hood.closestCity.pos == pos) {
       // We're at the city tile. We might need lots of units if there's
       // unit deficit (e.g. an army just left the city).
-      unitDemand += hood.closestCity.unitDeficitAll;
-      // TODO: update per unit
+      unitDemand += hood.closestCity.getUnitDeficit(army);
     }
+    _unitDemand[army] = unitDemand;
   }
 
   void updateUnitDemandGradient(Neighborhood hood, Army army) {
+    _unitDemandGradient[army] ??= 0;
     final landNeighbors =
         hood.neighbors.where((t) => !t.isOcean).toList(growable: false);
     if (landNeighbors.length > 0) {
       final maxNeedGradient = landNeighbors.fold<double>(
-          0, (prev, tile) => max(prev, tile.unitDemandGradient));
+          0,
+          (prev, tile) =>
+              max(prev, tile._unitDemandGradient.putIfAbsent(army, () => 0)));
       const spaceDecay = 0.8;
-      unitDemandGradient += maxNeedGradient * spaceDecay;
+      _unitDemandGradient[army] += maxNeedGradient * spaceDecay;
     }
 
     // Re-pump local need into the gradient.
-    unitDemandGradient += unitDemand;
+    _unitDemandGradient[army] += _unitDemand[army];
 
     // Decay the gradient over time.
     const timeDecay = 0.5;
-    unitDemandGradient *= timeDecay;
+    _unitDemandGradient[army] *= timeDecay;
   }
 
   void updateUnits(Neighborhood hood, Army army) {
@@ -174,19 +184,26 @@ class Tile {
             (tile.closestCity.pos - tile.pos).lengthSquared >
                 maxDeploymentRange * maxDeploymentRange) {
           // No movement beyond max deployment range.
+          // TODO: check deployment range of army
+          //       check that we're moving _beyond_ the range. Movement
+          //       from outside _towards_ the deploy area is of course okay.
           return prev;
         }
         if (prev == null) return tile;
-        if (tile.unitDemandGradient > prev.unitDemandGradient) return tile;
+        prev._unitDemandGradient[army] ??= 0;
+        tile._unitDemandGradient[army] ??= 0;
+        if (tile._unitDemandGradient[army] > prev._unitDemandGradient[army])
+          return tile;
         return prev;
       });
 
+      _unitDemandGradient[army] ??= 0;
       if (neediestTile != null &&
-          neediestTile.unitDemandGradient > unitDemandGradient) {
-        int contingent = units ~/ 2;
+          neediestTile._unitDemandGradient[army] > _unitDemandGradient[army]) {
+        int contingent = _units[army] ~/ 2;
         if (hood.closestCity?.isInCompleteWithdrawal(army) ?? false) {
           // Move everything if there are no more armies in the closest city.
-          contingent = units;
+          contingent = _units[army];
         }
 
         neediestTile._units[army] =
@@ -201,6 +218,6 @@ class Tile {
     _units[army] += hood.closestCity.requestUnits(army, this, hood);
 
     // Or offer good units back if we're at the place.
-    _units[army] -= hood.closestCity.offerUnits(army, this, units);
+    _units[army] -= hood.closestCity.offerUnits(army, this, _units[army]);
   }
 }
