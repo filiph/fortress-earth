@@ -23,9 +23,6 @@ class Tile {
   /// of [backgroundColor] to show.
   final Color neutralForegroundColor;
 
-  /// Currently stationed evil units.
-  int evil;
-
   /// The current pressure on this tile. If `0`, this tile has exactly
   /// the amount of good units it needs. If positive, the situation
   /// could be improved. If negative, the tile could send some units elsewhere.
@@ -55,19 +52,37 @@ class Tile {
   double goodLogisticsGradient = 0;
 
   /// The number of units per each army on this tile.
+  ///
+  /// Every time you update this, don't forget to call [_updateGoodOrEvil].
   final Map<Army, int> _units = Map<Army, int>();
+
+  /// Memoized number of good units on this tile.
+  ///
+  /// Otherwise, we'd need to count this through [_units] every time.
+  int _good = 0;
+
+  /// Memoized number of evil units on this tile.
+  int _evil = 0;
 
   Tile(
     this.pos,
     this.roughness, {
     this.backgroundColor = Color.purple,
-    this.evil = 0,
   }) : neutralForegroundColor =
             backgroundColor.blend(Color.black, 0.3 + _random.nextDouble() / 3);
 
+  /// Just show the gradient of a single army, the HQ.
+  double get debugUnitDemandGradient =>
+      _unitDemandGradient[_unitDemandGradient.keys
+          .singleWhere((a) => a.name == 'HQ', orElse: () => null)] ??
+      0;
+
+  /// Currently stationed evil units.
+  int get evil => _evil;
+
   Color get foregroundColor {
     if (isGood) {
-      final value = 150 + (unitsAll * 10).clamp(0, 100);
+      final value = 150 + (good * 10).clamp(0, 100);
       return Color(value, value, value);
     } else if (isEvil) {
       final value = 150 + (evil * 10).clamp(0, 100);
@@ -80,34 +95,27 @@ class Tile {
     }
   }
 
+  /// Currently stationed good units.
+  int get good => _good;
+
   bool get isEvil {
     assert(evil >= 0, "evil cannot be negative: $this");
     return evil > 0;
   }
 
   bool get isGood {
-    assert(unitsAll >= 0, "good cannot be negative: $this");
-    return unitsAll > 0;
+    assert(good >= 0, "good cannot be negative: $this");
+    return good > 0;
   }
 
-  bool get isNeutral => unitsAll == 0 && evil == 0 && !isOcean;
+  bool get isNeutral => good == 0 && evil == 0 && !isOcean;
 
   bool get isOcean => roughness == oceanRoughness;
-
-  /// Just show the gradient of a single army, the HQ.
-  @deprecated
-  double get unitDemandGradientDEBUG =>
-      _unitDemandGradient[_unitDemandGradient.keys
-          .singleWhere((a) => a.name == 'HQ', orElse: () => null)] ??
-      0;
-
-  /// Currently stationed good units.
-  int get unitsAll => _units.values.fold(0, (a, b) => a + b);
 
   @override
   String toString() => 'Tile<'
       'x=${pos.x},y=${pos.y},'
-      'good=$unitsAll,evil=$evil,roughness=$roughness,'
+      'good=$good,evil=$evil,roughness=$roughness,'
       'ocean=$isOcean'
       '>';
 
@@ -126,7 +134,7 @@ class Tile {
       }
     }
 
-    if (isEvil) {
+    if (army.isEvil != isEvil) {
       unitDemand += (evil * dominanceCoefficient).ceil();
     }
 
@@ -134,15 +142,22 @@ class Tile {
     // need that many more.
     final hoodEvil = hood.evil.ceil();
     final hoodGood = hood.good.floor();
+    final threat = army.isEvil ? (hoodGood - hoodEvil) : (hoodEvil - hoodGood);
     // The evil of the hood is not as important as the one on this tile.
     const hoodCoefficient = 0.2;
-    unitDemand += ((hoodEvil - hoodGood) * hoodCoefficient).floor();
+    unitDemand += (threat * hoodCoefficient).floor();
 
     if (hood.closestCity != null && hood.closestCity.pos == pos) {
-      // We're at the city tile. We might need lots of units if there's
-      // unit deficit (e.g. an army just left the city).
-      unitDemand += hood.closestCity.getUnitDeficit(army);
+      if (!army.isEvil) {
+        // We're at the city tile with a good unit. We might need lots of units
+        // if there's unit deficit (e.g. an army just left the city).
+        unitDemand += hood.closestCity.getUnitDeficit(army);
+      } else {
+        // Evil units love cities.
+        unitDemand += 100;
+      }
     }
+
     _unitDemand[army] = unitDemand;
   }
 
@@ -168,11 +183,6 @@ class Tile {
   }
 
   void updateUnits(Neighborhood hood, Army army) {
-    if (isEvil) {
-      // TODO: implement possible take over.
-      return;
-    }
-
     // Short-circuit ocean tiles: they can't update.
     if (isOcean) return;
 
@@ -180,7 +190,9 @@ class Tile {
     _units[army] ??= 0;
     if (_units[army] > 0) {
       final neediestTile = hood.neighbors.fold<Tile>(null, (prev, tile) {
-        if (tile.isEvil || tile.isOcean) return prev;
+        // Ignore enemy's tiles for now, and ocean tiles.
+        if ((tile.isEvil != army.isEvil) || tile.isOcean) return prev;
+        // Do not cross city boundaries.
         if (tile.closestCity != closestCity) return prev;
         if (tile.closestCity != null &&
             (tile.closestCity.pos - tile.pos).lengthSquared >
@@ -203,23 +215,49 @@ class Tile {
       if (neediestTile != null &&
           neediestTile._unitDemandGradient[army] > _unitDemandGradient[army]) {
         int contingent = _units[army] ~/ 2;
-        if (hood.closestCity?.isInCompleteWithdrawal(army) ?? false) {
+        if (!army.isEvil &&
+            (hood.closestCity?.isInCompleteWithdrawal(army) ?? false)) {
           // Move everything if there are no more armies in the closest city.
           contingent = _units[army];
         }
 
+        // Add units to the other tile.
         neediestTile._units[army] =
             neediestTile._units.putIfAbsent(army, () => 0) + contingent;
+        neediestTile._updateGoodOrEvil(army.isEvil, contingent);
+
+        // Remove units from here.
         _units[army] -= contingent;
+        _updateGoodOrEvil(army.isEvil, -contingent);
       }
     }
 
+    if (army.isEvil) {
+      // TODO: get units from cores.
+      return;
+    }
+
+    // Bail out if there's no closest city. In that case, nothing to do for
+    // good units.
     if (hood.closestCity == null) return;
 
     // Now ask for reinforcements.
-    _units[army] += hood.closestCity.requestUnits(army, this, hood);
+    final reinforcements = hood.closestCity.requestUnits(army, this, hood);
+    _units[army] += reinforcements;
+    _updateGoodOrEvil(false, reinforcements);
 
     // Or offer good units back if we're at the place.
-    _units[army] -= hood.closestCity.offerUnits(army, this, _units[army]);
+    final withdrawals = hood.closestCity.offerUnits(army, this, _units[army]);
+    _units[army] -= withdrawals;
+    _updateGoodOrEvil(false, withdrawals);
+  }
+
+  /// Updates [_good] and [_evil].
+  void _updateGoodOrEvil(bool isEvil, int difference) {
+    if (isEvil) {
+      _evil += difference;
+    } else {
+      _good += difference;
+    }
   }
 }

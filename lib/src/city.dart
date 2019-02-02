@@ -76,7 +76,7 @@ class City {
 
   /// Offer at most [offeredUnits] units to this city.
   ///
-  /// The method will return the number of [Tile.unitsAll] that it will take.
+  /// The method will return the number of [Tile.good] that it will take.
   /// The tile is responsible for subtracting it.
   int offerUnits(Army army, Tile tile, int offeredUnits) {
     // Only city tiles can take back units.
