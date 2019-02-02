@@ -140,9 +140,9 @@ class GameScreen extends Screen<Input> {
     }
 
     // Units on map.
-    for (final unit in armies.playerArmies.values) {
-      terminal.drawChar(mapOffsetLeft + unit.pos.x, mapOffsetTop + unit.pos.y,
-          unit.keyCode, Color.black, unit.color);
+    for (final army in armies.playerArmies.values) {
+      terminal.drawChar(mapOffsetLeft + army.pos.x, mapOffsetTop + army.pos.y,
+          army.keyCode, Color.black, army.color);
     }
 
     // Unit table / panel.
@@ -171,7 +171,7 @@ class GameScreen extends Screen<Input> {
     _stopwatch.reset();
     _stopwatch.start();
 
-    world.update(armies.playerArmies.values);
+    world.update(armies.armies);
     armies.update(world);
 
     dirty();

@@ -23,9 +23,22 @@ class Armies {
         initialDestination: Vec(40, 13)),
   });
 
+  final List<Army> evilArmies = [
+    Army.evil("Pawns", Color.red, initialPosition: Vec(70, 13)),
+  ];
+
+  Iterable<Army> get armies sync* {
+    yield* playerArmies.values;
+    yield* evilArmies;
+  }
+
   void update(World world) {
     for (final army in playerArmies.values) {
       army.updatePosition(world);
+    }
+
+    for (final evilArmy in evilArmies) {
+      evilArmy.updatePosition(world);
     }
   }
 }

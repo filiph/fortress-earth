@@ -55,5 +55,23 @@ void main() {
       expect(world.tiles[Vec(3, 3)].isNeutral, isFalse);
       expect(world.tiles[Vec(3, 3)].isGood, isTrue);
     });
+
+    test('good vs evil successfully runs', () {
+      world.tiles[Vec(3, 3)].hasEvilCore = true;
+      final evilArmy =
+          Army.evil("Pawns", Color.red, initialPosition: Vec(3, 3));
+
+      expect(world.tiles[Vec(3, 3)].isNeutral, isTrue);
+      expect(world.tiles[Vec(3, 3)].isGood, isFalse);
+
+      for (int i = 0; i < 1000; i++) {
+        army.updatePosition(world);
+        evilArmy.updatePosition(world);
+        world.update([army, evilArmy]);
+      }
+
+      expect(world.tiles[Vec(3, 3)].isNeutral, isFalse);
+      expect(world.tiles[Vec(3, 3)].isEvil, isTrue);
+    });
   });
 }

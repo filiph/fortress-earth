@@ -61,18 +61,19 @@ class Neighborhood {
   }
 
   double get evil =>
-      _cardinalNeighbors.map((t) => t.evil).fold(0, sum) +
+      center.evil +
+      _cardinalNeighbors.map((t) => t.evil).fold<int>(0, sum) +
       intercardinalDiscount *
           _intercardinalNeighbors.map((t) => t.evil).fold<int>(0, sum);
 
   double get good =>
+      center.good +
       goodInCardinals +
       intercardinalDiscount *
           _intercardinalNeighbors.map((t) => t.good).fold<int>(0, sum);
 
   /// Sum of good units in cardinal neighbors.
-  int get goodInCardinals =>
-      _cardinalNeighbors.map((t) => t.good).fold(0, sum);
+  int get goodInCardinals => _cardinalNeighbors.map((t) => t.good).fold(0, sum);
 
   bool get goodIsWinning => good >= evil;
 

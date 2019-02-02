@@ -16,6 +16,8 @@ class Tile {
   final Vec pos;
   final Color backgroundColor;
 
+  bool hasEvilCore = false;
+
   /// City that influences this tile.
   City closestCity;
 
@@ -74,7 +76,7 @@ class Tile {
   /// Just show the gradient of a single army, the HQ.
   double get debugUnitDemandGradient =>
       _unitDemandGradient[_unitDemandGradient.keys
-          .singleWhere((a) => a.name == 'HQ', orElse: () => null)] ??
+          .singleWhere((a) => a.name == 'Pawns', orElse: () => null)] ??
       0;
 
   /// Currently stationed evil units.
@@ -111,6 +113,15 @@ class Tile {
   bool get isNeutral => good == 0 && evil == 0 && !isOcean;
 
   bool get isOcean => roughness == oceanRoughness;
+
+  /// Returns `true` if this tile is already occupied by an opposing faction
+  /// of [army].
+  bool isEnemyFactionOccupied(Army army) {
+    if (isOcean) return false;
+    if (army.isEvil && isGood) return true;
+    if (!army.isEvil && isEvil) return true;
+    return false;
+  }
 
   @override
   String toString() => 'Tile<'
@@ -186,12 +197,12 @@ class Tile {
     // Short-circuit ocean tiles: they can't update.
     if (isOcean) return;
 
-    // Move with the need gradient.
+    // Move with the need gradient, between already owned squares.
     _units[army] ??= 0;
     if (_units[army] > 0) {
       final neediestTile = hood.neighbors.fold<Tile>(null, (prev, tile) {
-        // Ignore enemy's tiles for now, and ocean tiles.
-        if ((tile.isEvil != army.isEvil) || tile.isOcean) return prev;
+        if (tile.isOcean) return prev;
+        if (tile.isEnemyFactionOccupied(army)) return prev;
         // Do not cross city boundaries.
         if (tile.closestCity != closestCity) return prev;
         if (tile.closestCity != null &&
@@ -233,7 +244,11 @@ class Tile {
     }
 
     if (army.isEvil) {
-      // TODO: get units from cores.
+      if (hasEvilCore) {
+        const coreSpawn = 50;
+        _units[army] += coreSpawn;
+        _updateGoodOrEvil(true, coreSpawn);
+      }
       return;
     }
 
