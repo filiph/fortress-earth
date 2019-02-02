@@ -24,7 +24,8 @@ class Armies {
   });
 
   final List<Army> evilArmies = [
-    Army.evil("Pawns", Color.red, initialPosition: Vec(70, 13)),
+    Army.evil("Cal Pawns", Color.red, initialPosition: Vec(24, 13)),
+    Army.evil("EU Pawns", Color.red, initialPosition: Vec(70, 13)),
   ];
 
   Iterable<Army> get armies sync* {

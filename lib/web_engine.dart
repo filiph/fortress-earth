@@ -34,6 +34,7 @@ void runGame(html.CanvasElement canvas, {void Function() fullscreenCallback}) {
   );
 
   world.tiles[Vec(70, 13)].hasEvilCore = true;
+  world.tiles[Vec(24, 13)].hasEvilCore = true;
 
   final armies = Armies();
 
