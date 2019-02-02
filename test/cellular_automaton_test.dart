@@ -32,14 +32,14 @@ void main() {
   group('small flat 5x5 world with city', () {
     World world;
 
-    Army army;
+    PlayerArmy army;
 
     const height = 20;
 
     setUp(() {
       world =
           World(5, 5, (v) => Tile(v, height), cities: [City("SFO", Vec(0, 0))]);
-      army = Army('a'.codeUnitAt(0), 'Army', Color.blue)
+      army = PlayerArmy('a'.codeUnitAt(0), 'Army', Color.blue)
         ..setDestination(Vec(0, 0));
     });
 

@@ -24,7 +24,7 @@ class City {
 
   final int keyCode;
 
-  final List<Army> _armies = [];
+  final List<PlayerArmy> _armies = [];
 
   final Vec pos;
 
@@ -46,7 +46,7 @@ class City {
           _armies.map((a) => a.strength).fold<int>(0, _sum));
 
   /// Deploys [army] in this city.
-  void deploy(Army army) {
+  void deploy(PlayerArmy army) {
     assert(!_armies.contains(army));
     assert(army.deployedAt == this);
     _armies.add(army);
@@ -88,7 +88,7 @@ class City {
     return unitsTaken;
   }
 
-  void release(Army army) {
+  void release(PlayerArmy army) {
     assert(_armies.contains(army));
     assert(army.deployedAt == this);
     _armies.remove(army);

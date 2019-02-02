@@ -76,10 +76,10 @@ class GameScreen extends Screen<Input> {
   }
 
   bool keyDown(int keyCode, {bool shift, bool alt}) {
-    for (final key in armies.armies.keys) {
+    for (final key in armies.playerArmies.keys) {
       if (key == keyCode) {
-        ui.push(ArmyActionsDialog(
-            50, mapOffsetTop + mapHeight - 6, world, armies.armies[key], state));
+        ui.push(ArmyActionsDialog(50, mapOffsetTop + mapHeight - 6, world,
+            armies.playerArmies[key], state));
         return true;
       }
     }
@@ -114,7 +114,8 @@ class GameScreen extends Screen<Input> {
         Color foregroundColor;
         if (_showNeedGradient) {
           int index =
-              ((tile.unitDemandGradientDEBUG.clamp(-100, 100) + 100) / 20).floor();
+              ((tile.unitDemandGradientDEBUG.clamp(-100, 100) + 100) / 20)
+                  .floor();
           char = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9][index].toString();
         } else if (world.cities.containsKey(vec)) {
           char = '■';
@@ -139,7 +140,7 @@ class GameScreen extends Screen<Input> {
     }
 
     // Units on map.
-    for (final unit in armies.armies.values) {
+    for (final unit in armies.playerArmies.values) {
       terminal.drawChar(mapOffsetLeft + unit.pos.x, mapOffsetTop + unit.pos.y,
           unit.keyCode, Color.black, unit.color);
     }
@@ -170,7 +171,7 @@ class GameScreen extends Screen<Input> {
     _stopwatch.reset();
     _stopwatch.start();
 
-    world.update(armies.armies.values);
+    world.update(armies.playerArmies.values);
     armies.update(world);
 
     dirty();

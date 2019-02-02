@@ -14,8 +14,8 @@ class UnitPanel extends Panel {
     terminal.writeAt(0, 0, "Armies");
 
     var y = 2;
-    for (final key in armies.armies.keys) {
-      final unit = armies.armies[key];
+    for (final key in armies.playerArmies.keys) {
+      final unit = armies.playerArmies[key];
       terminal.drawChar(0, y, key, unit.color);
       terminal.writeAt(2, y, unit.name);
 

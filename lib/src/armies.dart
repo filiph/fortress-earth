@@ -1,83 +1,77 @@
 import 'package:fortress_earth/src/city.dart';
 import 'package:fortress_earth/src/world.dart';
 import 'package:malison/malison.dart';
+import 'package:meta/meta.dart';
 import 'package:piecemeal/piecemeal.dart';
 
 class Armies {
-  final Map<int, Army> armies = Map.unmodifiable({
-    KeyCode.one: Army(KeyCode.one, "Marines", Color.lightGreen,
+  final Map<int, PlayerArmy> playerArmies = Map.unmodifiable({
+    KeyCode.one: PlayerArmy(KeyCode.one, "Marines", Color.lightGreen,
         initialDestination: Vec(92, 18)),
-    KeyCode.two: Army(KeyCode.two, "Marines", Color.lightGreen,
+    KeyCode.two: PlayerArmy(KeyCode.two, "Marines", Color.lightGreen,
         initialDestination: Vec(37, 26)),
-    KeyCode.three: Army(KeyCode.three, "Marines", Color.lightGreen),
-    KeyCode.four: Army(KeyCode.four, "Infantry", Color.lightBlue),
-    KeyCode.five: Army(KeyCode.five, "Infantry", Color.lightBlue,
+    KeyCode.three: PlayerArmy(KeyCode.three, "Marines", Color.lightGreen),
+    KeyCode.four: PlayerArmy(KeyCode.four, "Infantry", Color.lightBlue),
+    KeyCode.five: PlayerArmy(KeyCode.five, "Infantry", Color.lightBlue,
         initialDestination: Vec(66, 12)),
-    KeyCode.six: Army(KeyCode.six, "Infantry", Color.lightBlue),
-    KeyCode.seven: Army(KeyCode.seven, "Air Force", Color.lightAqua),
-    KeyCode.eight: Army(KeyCode.eight, "Squad", Color.lightPurple,
+    KeyCode.six: PlayerArmy(KeyCode.six, "Infantry", Color.lightBlue),
+    KeyCode.seven: PlayerArmy(KeyCode.seven, "Air Force", Color.lightAqua),
+    KeyCode.eight: PlayerArmy(KeyCode.eight, "Squad", Color.lightPurple,
         initialDestination: Vec(77, 17)),
-    KeyCode.nine: Army(KeyCode.nine, "Squad", Color.lightPurple),
-    KeyCode.zero: Army(KeyCode.zero, "HQ", Color.lightGold,
+    KeyCode.nine: PlayerArmy(KeyCode.nine, "Squad", Color.lightPurple),
+    KeyCode.zero: PlayerArmy(KeyCode.zero, "HQ", Color.lightGold,
         initialDestination: Vec(40, 13)),
   });
 
   void update(World world) {
-    for (final army in armies.values) {
+    for (final army in playerArmies.values) {
       army.updatePosition(world);
     }
   }
 }
 
 class Army {
-  final int keyCode;
+  final bool isEvil;
 
   int strength = 500;
 
   final String name;
 
-  /// The city that this Army was stationed at last.
-  City _latestCity;
-
   final Color color;
 
   /// Current position. Starts in the middle of the Atlantic.
-  Vec _pos = Vec(50, 18);
+  Vec _pos;
 
   Vec _destination = Vec.zero;
-
-  City _deployedAt;
 
   int _beforeNextMove = 0;
 
   /// The lesser this numbers, the faster the unit will travel.
   final ticksPerMove = 10;
 
-  Army(this.keyCode, this.name, this.color, {Vec initialDestination}) {
+  Army.evil(String name, Color color,
+      {Vec initialPosition, Vec initialDestination})
+      : this._(name, color, true,
+            initialPosition: initialPosition,
+            initialDestination: initialDestination);
+
+  Army._(this.name, this.color, this.isEvil,
+      {@required initialPosition, Vec initialDestination})
+      : assert(initialPosition != null),
+        _pos = initialPosition {
     _destination = initialDestination ?? _pos;
   }
-
-  /// The city at which this army is currently deployed. Similar to
-  /// [_latestCity] with one difference: [deployedAt] reverts to `null`
-  /// as soon as this army leaves the city.
-  City get deployedAt => _deployedAt;
 
   bool get hasArrived => _destination == _pos;
 
   Vec get pos => _pos;
 
+  @mustCallSuper
   void setDestination(Vec vec) {
-    if (_deployedAt?.pos == vec) {
-      // Setting the destination we're currently at.
-      return;
-    }
-    _latestCity = _deployedAt;
-    if (_deployedAt != null) {
-      _deployedAt.release(this);
-    }
     _destination = vec;
   }
 
+  @mustCallSuper
   void updatePosition(World world) {
     if (hasArrived) return;
 
@@ -88,6 +82,46 @@ class Army {
     _pos += direction;
 
     _beforeNextMove = ticksPerMove;
+  }
+}
+
+class PlayerArmy extends Army {
+  final int keyCode;
+
+  /// The city that this Army was stationed at last.
+  City _latestCity;
+
+  City _deployedAt;
+
+  PlayerArmy(this.keyCode, String name, Color color,
+      {Vec initialPosition = const Vec(50, 18), Vec initialDestination})
+      : super._(name, color, false,
+            initialPosition: initialPosition,
+            initialDestination: initialDestination);
+
+  /// The city at which this army is currently deployed. Similar to
+  /// [_latestCity] with one difference: [deployedAt] reverts to `null`
+  /// as soon as this army leaves the city.
+  City get deployedAt => _deployedAt;
+
+  @override
+  void setDestination(Vec vec) {
+    if (_deployedAt?.pos == vec) {
+      // Setting the destination we're currently at.
+      return;
+    }
+    _latestCity = _deployedAt;
+    if (_deployedAt != null) {
+      _deployedAt.release(this);
+    }
+    super.setDestination(vec);
+  }
+
+  @override
+  void updatePosition(World world) {
+    if (hasArrived) return;
+
+    super.updatePosition(world);
 
     if (hasArrived) {
       final city = world.cities[pos];

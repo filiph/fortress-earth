@@ -9,6 +9,8 @@ import 'package:piecemeal/piecemeal.dart';
 
 final _random = Random();
 
+/// TODO: extract the `update*` methods to a separate `*System` classes.
+///       (Because Tile should not depend on City / Army.
 class Tile {
   final int roughness;
   final Vec pos;
