@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:fortress_earth/src/armies.dart';
 import 'package:fortress_earth/src/city.dart';
 import 'package:fortress_earth/src/neighborhood.dart';
 import 'package:fortress_earth/src/tile.dart';
@@ -69,7 +70,7 @@ class World {
 
   Array2D<Tile> get tiles => _tiles;
 
-  void update() {
+  void update(Iterable<Army> armies) {
     for (int i = 0; i < 100; i++) {
       final x = _random.nextInt(mapWidth);
       final y = _random.nextInt(mapHeight);
@@ -77,9 +78,11 @@ class World {
       final current = _tiles[vec];
       if (current.isOcean) continue;
       final hood = _getNeighborhoodOf(current);
-      current.updateUnits(hood);
-      current.updateUnitDemand(hood);
-      current.updateUnitDemandGradient(hood);
+      for (final army in armies) {
+        current.updateUnits(hood, army);
+        current.updateUnitDemand(hood, army);
+        current.updateUnitDemandGradient(hood, army);
+      }
     }
   }
 

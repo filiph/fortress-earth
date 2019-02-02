@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:fortress_earth/src/armies.dart';
 import 'package:fortress_earth/src/city.dart';
 import 'package:fortress_earth/src/constants.dart';
 import 'package:fortress_earth/src/neighborhood.dart';
@@ -21,7 +22,7 @@ class Tile {
   final Color neutralForegroundColor;
 
   /// Currently stationed good units.
-  int units;
+  int get units => _units.values.fold(0, (a, b) => a + b);
 
   /// Currently stationed evil units.
   int evil;
@@ -54,15 +55,15 @@ class Tile {
   /// TODO: either use or remove
   double goodLogisticsGradient = 0;
 
+  /// The number of units per each army on this tile.
+  final Map<Army, int> _units = Map<Army, int>();
+
   Tile(
     this.pos,
     this.roughness, {
     this.backgroundColor = Color.purple,
-    this.units = 0,
     this.evil = 0,
-  })  : assert(units == 0 || evil == 0,
-            "Cannot have tile with both good and evil"),
-        neutralForegroundColor =
+  }) : neutralForegroundColor =
             backgroundColor.blend(Color.black, 0.3 + _random.nextDouble() / 3);
 
   Color get foregroundColor {
@@ -101,7 +102,7 @@ class Tile {
       'ocean=$isOcean'
       '>';
 
-  void updateUnitDemand(Neighborhood hood) {
+  void updateUnitDemand(Neighborhood hood, Army army) {
     unitDemand = 0;
 
     // First, compute need of this particular square.
@@ -131,11 +132,12 @@ class Tile {
     if (hood.closestCity != null && hood.closestCity.pos == pos) {
       // We're at the city tile. We might need lots of units if there's
       // unit deficit (e.g. an army just left the city).
-      unitDemand += hood.closestCity.unitDeficit;
+      unitDemand += hood.closestCity.unitDeficitAll;
+      // TODO: update per unit
     }
   }
 
-  void updateUnitDemandGradient(Neighborhood hood) {
+  void updateUnitDemandGradient(Neighborhood hood, Army army) {
     final landNeighbors =
         hood.neighbors.where((t) => !t.isOcean).toList(growable: false);
     if (landNeighbors.length > 0) {
@@ -153,7 +155,7 @@ class Tile {
     unitDemandGradient *= timeDecay;
   }
 
-  void updateUnits(Neighborhood hood) {
+  void updateUnits(Neighborhood hood, Army army) {
     if (isEvil) {
       // TODO: implement possible take over.
       return;
@@ -163,7 +165,8 @@ class Tile {
     if (isOcean) return;
 
     // Move with the need gradient.
-    if (isGood) {
+    _units[army] ??= 0;
+    if (_units[army] > 0) {
       final neediestTile = hood.neighbors.fold<Tile>(null, (prev, tile) {
         if (tile.isEvil || tile.isOcean) return prev;
         if (tile.closestCity != closestCity) return prev;
@@ -181,21 +184,23 @@ class Tile {
       if (neediestTile != null &&
           neediestTile.unitDemandGradient > unitDemandGradient) {
         int contingent = units ~/ 2;
-        if (hood.closestCity?.isInCompleteWithdrawal ?? false) {
+        if (hood.closestCity?.isInCompleteWithdrawal(army) ?? false) {
           // Move everything if there are no more armies in the closest city.
           contingent = units;
         }
-        neediestTile.units += contingent;
-        units -= contingent;
+
+        neediestTile._units[army] =
+            neediestTile._units.putIfAbsent(army, () => 0) + contingent;
+        _units[army] -= contingent;
       }
     }
 
     if (hood.closestCity == null) return;
 
     // Now ask for reinforcements.
-    units += hood.closestCity.requestUnits(this, hood);
+    _units[army] += hood.closestCity.requestUnits(army, this, hood);
 
     // Or offer good units back if we're at the place.
-    units -= hood.closestCity.offerUnits(this, units);
+    _units[army] -= hood.closestCity.offerUnits(army, this, units);
   }
 }

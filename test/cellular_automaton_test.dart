@@ -1,6 +1,8 @@
+import 'package:fortress_earth/src/armies.dart';
 import 'package:fortress_earth/src/city.dart';
 import 'package:fortress_earth/src/tile.dart';
 import 'package:fortress_earth/src/world.dart';
+import 'package:malison/malison.dart';
 import 'package:piecemeal/piecemeal.dart';
 import 'package:test/test.dart';
 
@@ -19,7 +21,7 @@ void main() {
       expect(world.tiles[Vec(3, 3)].isGood, isFalse);
 
       for (int i = 0; i < 1000; i++) {
-        world.update();
+        world.update([]);
       }
 
       expect(world.tiles[Vec(3, 3)].isNeutral, isTrue);
@@ -30,11 +32,15 @@ void main() {
   group('small flat 5x5 world with city', () {
     World world;
 
+    Army army;
+
     const height = 20;
 
     setUp(() {
       world =
           World(5, 5, (v) => Tile(v, height), cities: [City("SFO", Vec(0, 0))]);
+      army = Army('a'.codeUnitAt(0), 'Army', Color.blue)
+        ..setDestination(Vec(0, 0));
     });
 
     test('good slowly overtakes', () {
@@ -42,7 +48,8 @@ void main() {
       expect(world.tiles[Vec(3, 3)].isGood, isFalse);
 
       for (int i = 0; i < 1000; i++) {
-        world.update();
+        army.updatePosition(world);
+        world.update([army]);
       }
 
       expect(world.tiles[Vec(3, 3)].isNeutral, isFalse);

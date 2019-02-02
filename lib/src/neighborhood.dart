@@ -41,8 +41,6 @@ class Neighborhood {
     this.worldHeight,
   );
 
-  int get availableUnits => closestCity?.availableUnits ?? 0;
-
   /// Returns the count of cardinal neighbors that are good.
   int get cardinalsWithGoodInThem =>
       _cardinalNeighbors.where((t) => t.isGood).length;

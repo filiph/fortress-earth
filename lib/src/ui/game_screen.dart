@@ -14,7 +14,7 @@ import 'package:piecemeal/piecemeal.dart';
 class GameScreen extends Screen<Input> {
   final World world;
 
-  final Armies units;
+  final Armies armies;
 
   final void Function() fullscreenCallback;
 
@@ -38,11 +38,11 @@ class GameScreen extends Screen<Input> {
 
   final SharedState state;
 
-  GameScreen(this.world, this.units, this.state, {this.fullscreenCallback})
+  GameScreen(this.world, this.armies, this.state, {this.fullscreenCallback})
       : _citiesPanel = CitiesPanel(mapOffsetLeft + mapWidth - 30,
             mapOffsetTop + mapHeight - 4, 30, 16, world.cities, state),
         _unitPanel = UnitPanel(
-            mapOffsetLeft + 50, mapOffsetTop + mapHeight - 2, 47, 14, units);
+            mapOffsetLeft + 50, mapOffsetTop + mapHeight - 2, 47, 14, armies);
 
   void activate(Screen<Input> popped, Object result) {
     if (result == null) return;
@@ -76,10 +76,10 @@ class GameScreen extends Screen<Input> {
   }
 
   bool keyDown(int keyCode, {bool shift, bool alt}) {
-    for (final key in units.armies.keys) {
+    for (final key in armies.armies.keys) {
       if (key == keyCode) {
         ui.push(ArmyActionsDialog(
-            50, mapOffsetTop + mapHeight - 6, world, units.armies[key], state));
+            50, mapOffsetTop + mapHeight - 6, world, armies.armies[key], state));
         return true;
       }
     }
@@ -139,7 +139,7 @@ class GameScreen extends Screen<Input> {
     }
 
     // Units on map.
-    for (final unit in units.armies.values) {
+    for (final unit in armies.armies.values) {
       terminal.drawChar(mapOffsetLeft + unit.pos.x, mapOffsetTop + unit.pos.y,
           unit.keyCode, Color.black, unit.color);
     }
@@ -170,8 +170,8 @@ class GameScreen extends Screen<Input> {
     _stopwatch.reset();
     _stopwatch.start();
 
-    world.update();
-    units.update(world);
+    world.update(armies.armies.values);
+    armies.update(world);
 
     dirty();
 

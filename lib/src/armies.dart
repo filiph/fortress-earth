@@ -3,63 +3,6 @@ import 'package:fortress_earth/src/world.dart';
 import 'package:malison/malison.dart';
 import 'package:piecemeal/piecemeal.dart';
 
-class Army {
-  final int keyCode;
-
-  int strength = 500;
-
-  final String name;
-
-  final Color color;
-
-  /// Current position. Starts in the middle of the Atlantic.
-  Vec _pos = Vec(50, 18);
-
-  Vec _destination = Vec.zero;
-
-  City _deployedAt;
-
-  int _beforeNextMove = 0;
-
-  /// The lesser this numbers, the faster the unit will travel.
-  final ticksPerMove = 10;
-
-  Army(this.keyCode, this.name, this.color, {Vec initialDestination}) {
-    _destination = initialDestination ?? _pos;
-  }
-
-  City get deployedAt => _deployedAt;
-
-  bool get hasArrived => _destination == _pos;
-
-  Vec get pos => _pos;
-
-  void setDestination(Vec vec) {
-    if (_deployedAt != null) {
-      _deployedAt.release(this);
-    }
-    _destination = vec;
-  }
-
-  void updatePosition(World world) {
-    if (hasArrived) return;
-
-    _beforeNextMove -= 1;
-    if (_beforeNextMove > 0) return;
-
-    final direction = (_destination - _pos).nearestDirection;
-    _pos += direction;
-
-    _beforeNextMove = ticksPerMove;
-
-    if (hasArrived) {
-      final city = world.cities[pos];
-      _deployedAt = city;
-      _deployedAt.deploy(this);
-    }
-  }
-}
-
 class Armies {
   final Map<int, Army> armies = Map.unmodifiable({
     KeyCode.one: Army(KeyCode.one, "Marines", Color.lightGreen,
@@ -82,6 +25,75 @@ class Armies {
   void update(World world) {
     for (final army in armies.values) {
       army.updatePosition(world);
+    }
+  }
+}
+
+class Army {
+  final int keyCode;
+
+  int strength = 500;
+
+  final String name;
+
+  /// The city that this Army was stationed at last.
+  City _latestCity;
+
+  final Color color;
+
+  /// Current position. Starts in the middle of the Atlantic.
+  Vec _pos = Vec(50, 18);
+
+  Vec _destination = Vec.zero;
+
+  City _deployedAt;
+
+  int _beforeNextMove = 0;
+
+  /// The lesser this numbers, the faster the unit will travel.
+  final ticksPerMove = 10;
+
+  Army(this.keyCode, this.name, this.color, {Vec initialDestination}) {
+    _destination = initialDestination ?? _pos;
+  }
+
+  /// The city at which this army is currently deployed. Similar to
+  /// [_latestCity] with one difference: [deployedAt] reverts to `null`
+  /// as soon as this army leaves the city.
+  City get deployedAt => _deployedAt;
+
+  bool get hasArrived => _destination == _pos;
+
+  Vec get pos => _pos;
+
+  void setDestination(Vec vec) {
+    if (_deployedAt?.pos == vec) {
+      // Setting the destination we're currently at.
+      return;
+    }
+    _latestCity = _deployedAt;
+    if (_deployedAt != null) {
+      _deployedAt.release(this);
+    }
+    _destination = vec;
+  }
+
+  void updatePosition(World world) {
+    if (hasArrived) return;
+
+    _beforeNextMove -= 1;
+    if (_beforeNextMove > 0) return;
+
+    final direction = (_destination - _pos).nearestDirection;
+    _pos += direction;
+
+    _beforeNextMove = ticksPerMove;
+
+    if (hasArrived) {
+      final city = world.cities[pos];
+      _deployedAt = city;
+      _deployedAt.deploy(this);
+      _latestCity = city;
     }
   }
 }
