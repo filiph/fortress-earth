@@ -73,11 +73,10 @@ class Tile {
   }) : neutralForegroundColor =
             backgroundColor.blend(Color.black, 0.3 + _random.nextDouble() / 3);
 
-  /// Just show the gradient of a single army, the HQ.
-  double get debugUnitDemandGradient =>
-      _unitDemandGradient[_unitDemandGradient.keys
-          .singleWhere((a) => a.name == 'Pawns', orElse: () => null)] ??
-      0;
+  /// Just show the gradient of the evil army.
+  double get debugUnitDemandGradient => _unitDemandGradient.entries
+      .map((e) => e.key.isEvil ? e.value : 0)
+      .fold(0, (a, b) => a + b);
 
   /// Currently stationed evil units.
   int get evil => _evil;
@@ -197,17 +196,17 @@ class Tile {
     // Short-circuit ocean tiles: they can't update.
     if (isOcean) return;
 
-    // Move with the need gradient, between already owned squares.
+    // Move with the need gradient, between non-enemy tiles.
     _units[army] ??= 0;
     if (_units[army] > 0) {
       final neediestTile = hood.neighbors.fold<Tile>(null, (prev, tile) {
         if (tile.isOcean) return prev;
         if (tile.isEnemyFactionOccupied(army)) return prev;
-        // Do not cross city boundaries.
-        if (tile.closestCity != closestCity) return prev;
+        // If this is player's army, do not cross city boundaries.
+        if (!army.isEvil && tile.closestCity != closestCity) return prev;
         if (tile.closestCity != null &&
             (tile.closestCity.pos - tile.pos).lengthSquared >
-                maxDeploymentRange * maxDeploymentRange) {
+                army.maxDeploymentRange * army.maxDeploymentRange) {
           // No movement beyond max deployment range.
           // TODO: check deployment range of army
           //       check that we're moving _beyond_ the range. Movement

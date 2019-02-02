@@ -1,4 +1,5 @@
 import 'package:fortress_earth/src/city.dart';
+import 'package:fortress_earth/src/constants.dart';
 import 'package:fortress_earth/src/world.dart';
 import 'package:malison/malison.dart';
 import 'package:meta/meta.dart';
@@ -50,6 +51,9 @@ class Army {
 
   final String name;
 
+  /// Distance from army [pos] after which units cannot go further.
+  final double maxDeploymentRange;
+
   final Color color;
 
   /// Current position. Starts in the middle of the Atlantic.
@@ -71,7 +75,9 @@ class Army {
   Army._(this.name, this.color, this.isEvil,
       {@required initialPosition, Vec initialDestination})
       : assert(initialPosition != null),
-        _pos = initialPosition {
+        _pos = initialPosition,
+        maxDeploymentRange =
+            isEvil ? double.infinity : defaultMaxDeploymentRange {
     _destination = initialDestination ?? _pos;
   }
 

@@ -1,3 +1,5 @@
+const defaultMaxDeploymentRange = 7;
+
 /// How much larger an army must be to dominate over the opposition.
 ///
 /// For example, a [dominanceCoefficient] of `1.5` means that to dominate
@@ -16,9 +18,6 @@ const mapOffsetLeft = 0;
 const mapOffsetTop = 0;
 
 const mapWidth = width;
-
-/// Distance from city after which units cannot go further.
-const double maxDeploymentRange = 7;
 
 /// Very large number representing impassibility of the oceans.
 const oceanRoughness = 0xFFFFFF;
