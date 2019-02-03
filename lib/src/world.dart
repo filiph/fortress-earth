@@ -49,26 +49,16 @@ class World {
     _updateTilesWithClosestCities();
   }
 
-  void _updateTilesWithClosestCities() {
-    for (final tile in _tiles) {
-      // TODO: toroidal distance
-      // TODO(next): A* path, ideally pre-computed
-      City closest;
-      int closestDistance = 0xFFFFFFFF;
-      for (final candidate in _cities.values) {
-        final distance = (tile.pos - candidate.pos).lengthSquared;
-        if (distance < closestDistance) {
-          closest = candidate;
-          closestDistance = distance;
-        }
-      }
-      tile.closestCity = closest;
-    }
-  }
-
   Map<Vec, City> get cities => _cities;
 
   Array2D<Tile> get tiles => _tiles;
+
+  /// Resets demand fields for the given army.
+  void clearDemand(Army army) {
+    for (final tile in tiles) {
+      tile.clearDemand(army);
+    }
+  }
 
   void update(Iterable<Army> armies) {
     for (int i = 0; i < 100; i++) {
@@ -117,5 +107,22 @@ class World {
     while (x < 0) x = x + mapWidth;
     while (x >= mapWidth) x = x - mapWidth;
     return Vec(x, y);
+  }
+
+  void _updateTilesWithClosestCities() {
+    for (final tile in _tiles) {
+      // TODO: toroidal distance
+      // TODO(next): A* path, ideally pre-computed
+      City closest;
+      int closestDistance = 0xFFFFFFFF;
+      for (final candidate in _cities.values) {
+        final distance = (tile.pos - candidate.pos).lengthSquared;
+        if (distance < closestDistance) {
+          closest = candidate;
+          closestDistance = distance;
+        }
+      }
+      tile.closestCity = closest;
+    }
   }
 }

@@ -52,6 +52,7 @@ class GameScreen extends Screen<Input> {
 
     final dialogResult = result as GoDialogResult;
     dialogResult.army.setDestination(dialogResult.destination.pos);
+    world.clearDemand(dialogResult.army);
   }
 
   bool handleInput(Input input) {

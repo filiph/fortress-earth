@@ -113,6 +113,12 @@ class Tile {
 
   bool get isOcean => roughness == oceanRoughness;
 
+  /// Resets the demand for [army] on this tile.
+  void clearDemand(Army army) {
+    _unitDemand[army] = 0;
+    _unitDemandGradient[army] = 0;
+  }
+
   /// Returns `true` if this tile is already occupied by an opposing faction
   /// of [army].
   bool isEnemyFactionOccupied(Army army) {
@@ -130,6 +136,17 @@ class Tile {
       '>';
 
   void updateUnitDemand(Neighborhood hood, Army army) {
+    // When withdrawing, nothing else matters.
+    if (!army.isEvil &&
+        (hood.closestCity?.isInCompleteWithdrawal(army) ?? false)) {
+      if (hood.closestCity.pos == pos) {
+        _unitDemand[army] = hood.closestCity.getUnitDeficit(army);
+      } else {
+        _unitDemand[army] = 0;
+      }
+      return;
+    }
+
     int unitDemand = 0;
 
     // First, compute need of this particular square.
