@@ -216,49 +216,11 @@ class Tile {
     // Short-circuit ocean tiles: they can't update.
     if (isOcean) return;
 
-    // Move with the need gradient, between non-enemy tiles.
     _units[army] ??= 0;
     if (_units[army] > 0) {
-      final neediestTile = hood.neighbors.fold<Tile>(null, (prev, tile) {
-        if (tile.isOcean) return prev;
-        if (tile.isEnemyFactionOccupied(army)) return prev;
-        // If this is player's army, do not cross city boundaries.
-        if (!army.isEvil && tile.closestCity != closestCity) return prev;
-        if (tile.closestCity != null &&
-            (tile.closestCity.pos - tile.pos).lengthSquared >
-                army.maxDeploymentRange * army.maxDeploymentRange) {
-          // No movement beyond max deployment range.
-          // TODO: check deployment range of army
-          //       check that we're moving _beyond_ the range. Movement
-          //       from outside _towards_ the deploy area is of course okay.
-          return prev;
-        }
-        if (prev == null) return tile;
-        prev._unitDemandGradient[army] ??= 0;
-        tile._unitDemandGradient[army] ??= 0;
-        if (tile._unitDemandGradient[army] > prev._unitDemandGradient[army])
-          return tile;
-        return prev;
-      });
-
-      _unitDemandGradient[army] ??= 0;
-      if (neediestTile != null &&
-          neediestTile._unitDemandGradient[army] > _unitDemandGradient[army]) {
-        int contingent = _units[army] ~/ 2;
-        if (!army.isEvil &&
-            (hood.closestCity?.isInCompleteWithdrawal(army) ?? false)) {
-          // Move everything if there are no more armies in the closest city.
-          contingent = _units[army];
-        }
-
-        // Add units to the other tile.
-        neediestTile._units[army] =
-            neediestTile._units.putIfAbsent(army, () => 0) + contingent;
-        neediestTile._updateGoodOrEvil(army.isEvil, contingent);
-
-        // Remove units from here.
-        _units[army] -= contingent;
-        _updateGoodOrEvil(army.isEvil, -contingent);
+      final attacked = _updateUnitsByTryingAttack(hood, army);
+      if (!attacked) {
+        _updateUnitsByMovingWithNeedGradient(hood, army);
       }
     }
 
@@ -286,12 +248,138 @@ class Tile {
     _updateGoodOrEvil(false, withdrawals);
   }
 
-  /// Updates [_good] and [_evil].
+  /// Updates [_evil] or [_good], according to [isEvil].
   void _updateGoodOrEvil(bool isEvil, int difference) {
     if (isEvil) {
       _evil += difference;
     } else {
       _good += difference;
     }
+  }
+
+  /// Move with the need gradient, between non-enemy tiles.
+  void _updateUnitsByMovingWithNeedGradient(Neighborhood hood, Army army) {
+    final neediestTile = hood.neighbors.fold<Tile>(null, (prev, tile) {
+      if (tile.isOcean) return prev;
+      if (tile.isEnemyFactionOccupied(army)) return prev;
+      // If this is player's army, do not cross city boundaries.
+      if (!army.isEvil && tile.closestCity != closestCity) return prev;
+      if (tile.closestCity != null &&
+          (tile.closestCity.pos - tile.pos).lengthSquared >
+              army.maxDeploymentRange * army.maxDeploymentRange) {
+        // No movement beyond max deployment range.
+        // TODO: check deployment range of army
+        //       check that we're moving _beyond_ the range. Movement
+        //       from outside _towards_ the deploy area is of course okay.
+        return prev;
+      }
+      if (prev == null) return tile;
+      prev._unitDemandGradient[army] ??= 0;
+      tile._unitDemandGradient[army] ??= 0;
+      if (tile._unitDemandGradient[army] > prev._unitDemandGradient[army])
+        return tile;
+      return prev;
+    });
+
+    _unitDemandGradient[army] ??= 0;
+    if (neediestTile != null &&
+        neediestTile._unitDemandGradient[army] > _unitDemandGradient[army]) {
+      int contingent = _units[army] ~/ 2;
+      if (!army.isEvil &&
+          (hood.closestCity?.isInCompleteWithdrawal(army) ?? false)) {
+        // Move everything if there are no more armies in the closest city.
+        contingent = _units[army];
+      }
+
+      // Add units to the other tile.
+      neediestTile._units[army] =
+          neediestTile._units.putIfAbsent(army, () => 0) + contingent;
+      neediestTile._updateGoodOrEvil(army.isEvil, contingent);
+
+      // Remove units from here.
+      _units[army] -= contingent;
+      _updateGoodOrEvil(army.isEvil, -contingent);
+    }
+  }
+
+  int _getUnitSurplus(Army army) {
+    final demand = _unitDemand[army] ?? 0;
+    final actual = army.isEvil ? _evil : _good;
+    return actual - demand;
+  }
+
+  /// This function updates both this and the target tile, if any
+  /// opportunity for attack is found. Returns `true` if attack took place.
+  bool _updateUnitsByTryingAttack(Neighborhood hood, Army army) {
+    final unitSurplus = _getUnitSurplus(army).clamp(0, _units[army]);
+    if (unitSurplus == 0) {
+      // Don't attack if we're not meeting this tile's demand.
+      return false;
+    }
+
+    final neutralTilesCount = hood.neighbors.where((t) => t.isNeutral).length;
+
+    if (neutralTilesCount > 0) {
+      // We don't attack when there is still room to capture without fighting.
+      return false;
+    }
+
+    final friendlyTilesCount =
+        hood.neighbors.where((t) => t.isEvil == army.isEvil).length;
+    final enemyTiles = hood.neighbors
+        .where((t) => t.isEnemyFactionOccupied(army))
+        .toList(growable: false);
+
+    if (enemyTiles.length == 0) {
+      // Nothing to attack.
+      return false;
+    }
+
+    if (enemyTiles.length > friendlyTilesCount) {
+      // We don't attack when under pressure.
+      return false;
+    }
+
+    // Sort tiles from least to most occupied.
+    // TODO: just found the least without sorting everything
+    enemyTiles.sort((a, b) => (a._good + a._evil).compareTo(b._good + b._evil));
+    final targetTile = enemyTiles.first;
+    // Since _good and _evil are mutually exclusive, this just gives the target
+    // tile's strength, regardless of affiliation.
+    final targetStrength = targetTile._good + targetTile._evil;
+
+    if (unitSurplus <= targetStrength) {
+      // Too weak to attack
+      return false;
+    }
+
+    final targetLosses = targetStrength;
+    final attackerStartingStrength = _units[army];
+    final attackerLosses = targetLosses ~/ 2;
+    final attackerStayBehind = 1;
+    final attackerMoveForward =
+        attackerStartingStrength - attackerLosses - attackerStayBehind;
+
+    // Update this tile.
+    _units[army] = attackerStayBehind;
+    _updateGoodOrEvil(
+        army.isEvil, attackerStayBehind - attackerStartingStrength);
+
+    // Remove defenders from target tile.
+    targetTile._units.updateAll((a, n) {
+      if (n == 0) return 0;
+      assert(a.isEvil != army.isEvil,
+          "There was a friendly unit in attacked tile $targetTile");
+      a.strength -= n;
+      return 0;
+    });
+    targetTile._good = 0;
+    targetTile._evil = 0;
+
+    // Add attackers to target tile.
+    targetTile._units[army] = attackerMoveForward;
+    targetTile._updateGoodOrEvil(army.isEvil, attackerMoveForward);
+
+    return true;
   }
 }
