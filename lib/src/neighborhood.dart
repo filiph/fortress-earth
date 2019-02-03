@@ -4,6 +4,8 @@ import 'package:fortress_earth/src/city.dart';
 import 'package:fortress_earth/src/tile.dart';
 import 'package:piecemeal/piecemeal.dart';
 
+final _random = Random();
+
 class Neighborhood {
   /// The discounted effect of intercardinal neighbours (being farther away
   /// than cardinal neighbors).
@@ -11,27 +13,15 @@ class Neighborhood {
 
   static const infiniteDistance = 0xFFFFFFFF;
 
-  City get closestCity => center.closestCity;
-
   final int worldWidth;
 
   final int worldHeight;
 
   final Tile center;
 
-  Vec get pos => center.pos;
-
   final List<Tile> _cardinalNeighbors;
 
   final List<Tile> _intercardinalNeighbors;
-
-  Iterable<Tile> get neighbors =>
-      _cardinalNeighbors.followedBy(_intercardinalNeighbors);
-
-  Iterable<Tile> get sameCityNeighbors {
-    if (closestCity == null) return neighbors;
-    return neighbors.where((t) => t.closestCity == closestCity);
-  }
 
   Neighborhood(
     this.center,
@@ -45,9 +35,7 @@ class Neighborhood {
   int get cardinalsWithGoodInThem =>
       _cardinalNeighbors.where((t) => t.isGood).length;
 
-  /// Returns the count of neighbors that are good.
-  List<Tile> get neighborsWithGoodInThem =>
-      neighbors.where((t) => t.isGood).toList(growable: false);
+  City get closestCity => center.closestCity;
 
   /// The difference between good and evil.
   ///
@@ -77,6 +65,25 @@ class Neighborhood {
 
   bool get goodIsWinning => good >= evil;
 
+  Iterable<Tile> get neighbors =>
+      _cardinalNeighbors.followedBy(_intercardinalNeighbors);
+
+  /// Returns the count of neighbors that are not neutral.
+  Iterable<Tile> get nonNeutralNeighbors =>
+      neighbors.where((t) => !t.isNeutral);
+
+  Vec get pos => center.pos;
+
+  Iterable<Tile> get sameCityNeighbors {
+    if (closestCity == null) return neighbors;
+    return neighbors.where((t) => t.closestCity == closestCity);
+  }
+
+  Tile get tileTowardsEnemy {
+    final vec = _toroidalWrap(pos + towardsEnemy);
+    return neighbors.where((t) => t.pos == vec).single;
+  }
+
   Direction get towardsCity {
     if (closestCity == null) return Direction.none;
     // TODO: toroidal wrapping
@@ -92,11 +99,6 @@ class Neighborhood {
     }
 
     return towardsCity.rotate180;
-  }
-
-  Tile get tileTowardsEnemy {
-    final vec = _toroidalWrap(pos + towardsEnemy);
-    return neighbors.where((t) => t.pos == vec).single;
   }
 
   Vec _toroidalWrap(Vec v) {
@@ -120,5 +122,3 @@ class Neighborhood {
 
   static int sum(int a, int b) => a + b;
 }
-
-final _random = Random();
