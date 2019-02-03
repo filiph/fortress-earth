@@ -139,13 +139,15 @@ class Tile {
       unitDemand += 1;
       // Every neutral field surrounded by many good neighbors gets a boost.
       // This makes sure we're filling in the gaps.
-      if (hood.neighborsWithGoodInThem.length > neutralNeighbors) {
+      if (hood.nonNeutralNeighbors.length > neutralNeighbors) {
         unitDemand += 5;
       }
     }
 
-    if (army.isEvil != isEvil) {
-      unitDemand += (evil * dominanceCoefficient).ceil();
+    // Try to match the opposing force.
+    if (isEnemyFactionOccupied(army)) {
+      final opposingForce = army.isEvil ? good : evil;
+      unitDemand += (opposingForce * dominanceCoefficient).ceil();
     }
 
     // Second, consider the hood (if there's many units around, we might not
@@ -173,6 +175,11 @@ class Tile {
 
   void updateUnitDemandGradient(Neighborhood hood, Army army) {
     _unitDemandGradient[army] ??= 0;
+
+    // Decay the gradient over time. (This tends to zero.)
+    const timeDecay = 0.2;
+    _unitDemandGradient[army] *= timeDecay;
+
     final landNeighbors =
         hood.neighbors.where((t) => !t.isOcean).toList(growable: false);
     if (landNeighbors.length > 0) {
@@ -186,10 +193,6 @@ class Tile {
 
     // Re-pump local need into the gradient.
     _unitDemandGradient[army] += _unitDemand[army];
-
-    // Decay the gradient over time.
-    const timeDecay = 0.5;
-    _unitDemandGradient[army] *= timeDecay;
   }
 
   void updateUnits(Neighborhood hood, Army army) {
