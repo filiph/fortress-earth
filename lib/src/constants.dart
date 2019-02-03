@@ -1,4 +1,4 @@
-const defaultMaxDeploymentRange = 7;
+const double defaultMaxDeploymentRange = 7;
 
 /// How much larger an army must be to dominate over the opposition.
 ///
