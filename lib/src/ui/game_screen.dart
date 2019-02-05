@@ -140,6 +140,12 @@ class GameScreen extends Screen<Input> {
       }
     }
 
+    // Cores on map.
+    for (final army in armies.evilArmies) {
+      terminal.drawChar(mapOffsetLeft + army.pos.x, mapOffsetTop + army.pos.y,
+          'X'.codeUnitAt(0), Color.black, army.color);
+    }
+
     // Units on map.
     for (final army in armies.playerArmies.values) {
       terminal.drawChar(mapOffsetLeft + army.pos.x, mapOffsetTop + army.pos.y,
