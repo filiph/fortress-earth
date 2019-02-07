@@ -29,4 +29,4 @@ const width = 130;
 final beginningOfPlay = DateTime.utc(2014, 9, 1);
 
 /// Duration of one tick of play.
-const timeStep = Duration(days: 1);
+const timeStep = Duration(hours: 1);
