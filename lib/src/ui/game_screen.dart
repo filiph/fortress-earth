@@ -1,11 +1,13 @@
+import 'dart:math';
+
+import 'package:fortress_earth/src/armies.dart';
 import 'package:fortress_earth/src/constants.dart';
 import 'package:fortress_earth/src/shared_state.dart';
 import 'package:fortress_earth/src/ui/dialogs/army_actions_dialog.dart';
 import 'package:fortress_earth/src/ui/input.dart';
+import 'package:fortress_earth/src/ui/panels/armies_panel.dart';
 import 'package:fortress_earth/src/ui/panels/chat_panel.dart';
 import 'package:fortress_earth/src/ui/panels/cities_panel.dart';
-import 'package:fortress_earth/src/ui/panels/armies_panel.dart';
-import 'package:fortress_earth/src/armies.dart';
 import 'package:fortress_earth/src/world.dart';
 import 'package:malison/malison.dart';
 import 'package:malison/malison_web.dart';
@@ -23,6 +25,10 @@ class GameScreen extends Screen<Input> {
   int _latestUpdateTime = 0;
 
   int _latestRenderTime = 0;
+
+  double _gradientLowClamp = 0;
+
+  double _gradientHighClamp = 1;
 
   final UnitPanel _unitPanel;
 
@@ -114,10 +120,13 @@ class GameScreen extends Screen<Input> {
         String char;
         Color foregroundColor;
         if (_showNeedGradient) {
-          int index =
-              ((tile.debugUnitDemandGradient.clamp(-100, 100) + 100) / 20)
-                  .floor();
-          char = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9][index].toString();
+          double value = tile.debugEvilDemandGradient;
+          _gradientLowClamp = min(value, _gradientLowClamp);
+          _gradientHighClamp = max(value, _gradientHighClamp);
+          double normalized =
+              _normalizeValue(value, _gradientLowClamp, _gradientHighClamp);
+          int index = (normalized * 10).floor();
+          char = const [0, 1, 2, 3, 4, 5, 5, 6, 7, 8, 9][index].toString();
         } else if (world.cities.containsKey(vec)) {
           char = '■';
           foregroundColor = Color.yellow;
@@ -186,5 +195,9 @@ class GameScreen extends Screen<Input> {
     dirty();
 
     _latestUpdateTime = _stopwatch.elapsedMicroseconds;
+  }
+
+  static double _normalizeValue(double value, double minimum, double maximum) {
+    return ((value - minimum).clamp(minimum, maximum) / (maximum - minimum));
   }
 }

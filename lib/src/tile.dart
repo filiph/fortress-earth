@@ -74,7 +74,7 @@ class Tile {
             backgroundColor.blend(Color.black, 0.3 + _random.nextDouble() / 3);
 
   /// Just show the gradient of the evil army.
-  double get debugUnitDemandGradient => _unitDemandGradient.entries
+  double get debugEvilDemandGradient => _unitDemandGradient.entries
       .map((e) => e.key.isEvil ? e.value : 0)
       .fold(0, (a, b) => a + b);
 
