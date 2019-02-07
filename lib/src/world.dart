@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:fortress_earth/src/armies.dart';
 import 'package:fortress_earth/src/city.dart';
+import 'package:fortress_earth/src/constants.dart';
 import 'package:fortress_earth/src/neighborhood.dart';
 import 'package:fortress_earth/src/tile.dart';
 import 'package:malison/malison.dart';
@@ -30,12 +31,15 @@ class World {
 
   final int mapHeight;
 
+  DateTime _currentTime;
+
   Array2D<Tile> _tiles;
 
   Map<Vec, City> _cities;
 
   World(this.mapWidth, this.mapHeight, Tile Function(Vec) generator,
       {Iterable<City> cities}) {
+    _currentTime = beginningOfPlay;
     _cities = Map.fromIterable(cities ?? defaultCities, key: (c) => c.pos);
     assert(() {
       final keyCodes = Set<int>();
@@ -50,6 +54,8 @@ class World {
   }
 
   Map<Vec, City> get cities => _cities;
+
+  DateTime get currentTime => _currentTime;
 
   Array2D<Tile> get tiles => _tiles;
 
@@ -69,11 +75,13 @@ class World {
       if (current.isOcean) continue;
       final hood = _getNeighborhoodOf(current);
       for (final army in armies) {
-        current.updateUnits(hood, army);
+        current.updateUnits(hood, army, currentTime);
         current.updateUnitDemand(hood, army);
         current.updateUnitDemandGradient(hood, army);
       }
     }
+
+    _currentTime = _currentTime.add(timeStep);
   }
 
   Neighborhood _getNeighborhoodOf(Tile center) {

@@ -161,14 +161,16 @@ class GameScreen extends Screen<Input> {
     // Cities panel.
     _citiesPanel.render(terminal);
 
+    terminal.writeAt(width - 30, 0, "  Fortress Earth - tech demo  ");
+    terminal.writeAt(
+        width - 30, 1, "  ${world.currentTime.toIso8601String()}  ");
+
     final renderMilliseconds =
         (_latestRenderTime / 1000).toStringAsFixed(3).padLeft(6);
     final updateMilliseconds =
         (_latestUpdateTime / 1000).toStringAsFixed(3).padLeft(6);
-    terminal.writeAt(width - 40, 0, "  render: ${renderMilliseconds}ms  ");
-    terminal.writeAt(width - 20, 0, "  update: ${updateMilliseconds}ms  ");
-
-    //terminal.writeAt(width - 30, 0, "  Fortress Earth - tech demo  ");
+    terminal.writeAt(width - 40, 2, "  render: ${renderMilliseconds}ms  ");
+    terminal.writeAt(width - 20, 2, "  update: ${updateMilliseconds}ms  ");
 
     _latestRenderTime = _stopwatch.elapsedMicroseconds;
     _stopwatch.stop();

@@ -23,9 +23,9 @@ class Armies {
         initialDestination: Vec(40, 13)),
   });
 
-  final List<Army> evilArmies = [
-    Army.evil("Cal Pawns", Color.red, initialPosition: Vec(24, 13)),
-    Army.evil("EU Pawns", Color.red, initialPosition: Vec(70, 13)),
+  final List<EvilArmy> evilArmies = [
+    EvilArmy("Cal Pawns", initialPosition: Vec(24, 13)),
+    EvilArmy("EU Pawns", initialPosition: Vec(70, 13)),
   ];
 
   Iterable<Army> get armies sync* {
@@ -66,12 +66,6 @@ class Army {
   /// The lesser this numbers, the faster the unit will travel.
   final ticksPerMove = 10;
 
-  Army.evil(String name, Color color,
-      {Vec initialPosition, Vec initialDestination})
-      : this._(name, color, true,
-            initialPosition: initialPosition,
-            initialDestination: initialDestination);
-
   Army._(this.name, this.color, this.isEvil,
       {@required initialPosition, Vec initialDestination})
       : assert(initialPosition != null),
@@ -101,6 +95,22 @@ class Army {
     _pos += direction;
 
     _beforeNextMove = ticksPerMove;
+  }
+}
+
+class EvilArmy extends Army {
+  static const _generatingUnitsDuration = Duration(days: 365);
+
+  final DateTime spawnTime;
+
+  EvilArmy(String name, {DateTime spawnTime, Vec initialPosition})
+      : spawnTime = spawnTime ?? beginningOfPlay,
+        super._(name, Color.red, true, initialPosition: initialPosition);
+
+  bool isGeneratingUnits(DateTime time) {
+    assert(time.isUtc);
+    if (time.isBefore(spawnTime)) return false;
+    return time.isBefore(spawnTime.add(_generatingUnitsDuration));
   }
 }
 

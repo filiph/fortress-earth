@@ -24,3 +24,9 @@ const oceanRoughness = 0xFFFFFF;
 
 /// Width of the whole UI.
 const width = 130;
+
+/// The first day of play.
+final beginningOfPlay = DateTime.utc(2014, 9, 1);
+
+/// Duration of one tick of play.
+const timeStep = Duration(days: 1);

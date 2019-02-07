@@ -59,7 +59,7 @@ void main() {
     test('good vs evil successfully runs', () {
       world.tiles[Vec(3, 3)].hasEvilCore = true;
       final evilArmy =
-          Army.evil("Pawns", Color.red, initialPosition: Vec(3, 3));
+          EvilArmy("Pawns", initialPosition: Vec(3, 3));
 
       expect(world.tiles[Vec(3, 3)].isNeutral, isTrue);
       expect(world.tiles[Vec(3, 3)].isGood, isFalse);

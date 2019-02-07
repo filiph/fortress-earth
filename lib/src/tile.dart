@@ -212,7 +212,7 @@ class Tile {
     _unitDemandGradient[army] += _unitDemand[army];
   }
 
-  void updateUnits(Neighborhood hood, Army army) {
+  void updateUnits(Neighborhood hood, Army army, DateTime currentTime) {
     // Short-circuit ocean tiles: they can't update.
     if (isOcean) return;
 
@@ -225,7 +225,8 @@ class Tile {
     }
 
     if (army.isEvil) {
-      if (hasEvilCore) {
+      if (hasEvilCore && (army as EvilArmy).isGeneratingUnits(currentTime)) {
+        print("generating unit ($currentTime)");
         const coreSpawn = 50;
         _units[army] += coreSpawn;
         _updateGoodOrEvil(true, coreSpawn);
@@ -246,6 +247,12 @@ class Tile {
     final withdrawals = hood.closestCity.offerUnits(army, this, _units[army]);
     _units[army] -= withdrawals;
     _updateGoodOrEvil(false, withdrawals);
+  }
+
+  int _getUnitSurplus(Army army) {
+    final demand = _unitDemand[army] ?? 0;
+    final actual = army.isEvil ? _evil : _good;
+    return actual - demand;
   }
 
   /// Updates [_evil] or [_good], according to [isEvil].
@@ -300,12 +307,6 @@ class Tile {
       _units[army] -= contingent;
       _updateGoodOrEvil(army.isEvil, -contingent);
     }
-  }
-
-  int _getUnitSurplus(Army army) {
-    final demand = _unitDemand[army] ?? 0;
-    final actual = army.isEvil ? _evil : _good;
-    return actual - demand;
   }
 
   /// This function updates both this and the target tile, if any
