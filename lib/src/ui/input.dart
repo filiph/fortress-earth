@@ -46,6 +46,9 @@ class Input {
   /// Debug inputs.
   static const debugNeedGradient = Input("debugNeedGradient");
 
+  /// Debug framerate.
+  static const debugShowFramerate = Input("debugShowFramerate");
+
   final String name;
 
   const Input(this.name);

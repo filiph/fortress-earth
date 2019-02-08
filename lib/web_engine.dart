@@ -25,7 +25,8 @@ void runGame(html.CanvasElement canvas, {void Function() fullscreenCallback}) {
 
   ui.keyPress.bind(Input.fullscreen, KeyCode.f, alt: true);
 
-  ui.keyPress.bind(Input.debugNeedGradient, KeyCode.n, shift: true);
+  ui.keyPress.bind(Input.debugNeedGradient, KeyCode.n, alt: true);
+  ui.keyPress.bind(Input.debugShowFramerate, KeyCode.f, alt: true);
 
   final world = World(
     mapWidth,

@@ -42,6 +42,8 @@ class GameScreen extends Screen<Input> {
 
   bool _showNeedGradient = false;
 
+  bool _showFramerate = false;
+
   final SharedState state;
 
   GameScreen(this.world, this.armies, this.state, {this.fullscreenCallback})
@@ -73,6 +75,10 @@ class GameScreen extends Screen<Input> {
 
       case Input.debugNeedGradient:
         _showNeedGradient = !_showNeedGradient;
+        break;
+
+      case Input.debugShowFramerate:
+        _showFramerate = !_showFramerate;
         break;
 
       default:
@@ -172,14 +178,16 @@ class GameScreen extends Screen<Input> {
 
     terminal.writeAt(width - 30, 0, "  Fortress Earth - tech demo  ");
     terminal.writeAt(
-        width - 30, 1, "  ${world.currentTime.toIso8601String()}  ");
+        width - 30, 1, "   ${world.currentTime.toIso8601String()}    ");
 
-    final renderMilliseconds =
-        (_latestRenderTime / 1000).toStringAsFixed(3).padLeft(6);
-    final updateMilliseconds =
-        (_latestUpdateTime / 1000).toStringAsFixed(3).padLeft(6);
-    terminal.writeAt(width - 40, 2, "  render: ${renderMilliseconds}ms  ");
-    terminal.writeAt(width - 20, 2, "  update: ${updateMilliseconds}ms  ");
+    if (_showFramerate) {
+      final renderMilliseconds =
+          (_latestRenderTime / 1000).toStringAsFixed(3).padLeft(6);
+      final updateMilliseconds =
+          (_latestUpdateTime / 1000).toStringAsFixed(3).padLeft(6);
+      terminal.writeAt(0, 0, "render: ${renderMilliseconds}ms  ");
+      terminal.writeAt(18, 0, "update: ${updateMilliseconds}ms  ");
+    }
 
     _latestRenderTime = _stopwatch.elapsedMicroseconds;
     _stopwatch.stop();
