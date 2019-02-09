@@ -35,9 +35,6 @@ void runGame(html.CanvasElement canvas, {void Function() fullscreenCallback}) {
     (v) => Tile(v, getTerrainRoughness(v), backgroundColor: getTerrainColor(v)),
   );
 
-  world.tiles[Vec(70, 13)].hasEvilCore = true;
-  world.tiles[Vec(24, 13)].hasEvilCore = true;
-
   final armies = Armies();
 
   final sim = Simulation(world, armies);

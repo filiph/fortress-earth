@@ -17,8 +17,6 @@ class Tile {
   final Vec pos;
   final Color backgroundColor;
 
-  bool hasEvilCore = false;
-
   /// City that influences this tile.
   City closestCity;
 
@@ -219,17 +217,31 @@ class Tile {
     if (isOcean) return;
 
     _units[army] ??= 0;
+
+    // Attack or move.
     if (_units[army] > 0) {
-      final attacked = _updateUnitsByTryingAttack(hood, army, pubSub);
-      if (!attacked) {
+      final didAttack = _updateUnitsByTryingAttack(hood, army, pubSub);
+      if (!didAttack) {
         _updateUnitsByMovingWithNeedGradient(hood, army);
       }
     }
 
+    // Die if army is dead.
+    if (!army.isAlive && _units[army] > 0) {
+      final dieCount = max(_units[army] ~/ 2, 1);
+      _units[army] -= dieCount;
+      army.strength -= dieCount;
+      _updateGoodOrEvil(army.isEvil, -dieCount);
+    }
+
+    // Spawn new units.
     if (army.isEvil) {
-      if (hasEvilCore && (army as EvilArmy).isGeneratingUnits(currentTime)) {
+      if (army.pos == pos &&
+          (army as EvilArmy).isGeneratingUnits(currentTime)) {
         const coreSpawn = 50;
         _units[army] += coreSpawn;
+        // TODO: update army strength via pubSub, not directly
+        army.strength += coreSpawn;
         _updateGoodOrEvil(true, coreSpawn);
       }
       return;
@@ -373,6 +385,7 @@ class Tile {
       assert(a.isEvil != army.isEvil,
           "There was a friendly unit in attacked tile $targetTile");
       a.strength -= n;
+      // TODO: report loss of units to pubSub (an update Army.strength somewhere
       return 0;
     });
     targetTile._good = 0;

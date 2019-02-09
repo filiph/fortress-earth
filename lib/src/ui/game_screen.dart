@@ -158,14 +158,16 @@ class GameScreen extends Screen<Input> {
       }
     }
 
-    // Cores on map.
+    // Evil armies on map.
     for (final army in armies.evilArmies) {
+      if (!army.isAlive) continue;
       terminal.drawChar(mapOffsetLeft + army.pos.x, mapOffsetTop + army.pos.y,
           'X'.codeUnitAt(0), Color.black, army.color);
     }
 
-    // Units on map.
+    // Player armies on map.
     for (final army in armies.playerArmies.values) {
+      if (!army.isAlive) continue;
       terminal.drawChar(mapOffsetLeft + army.pos.x, mapOffsetTop + army.pos.y,
           army.keyCode, Color.black, army.color);
     }

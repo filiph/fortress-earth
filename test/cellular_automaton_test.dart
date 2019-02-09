@@ -73,7 +73,6 @@ void main() {
     });
 
     test('good vs evil successfully runs', () {
-      world.tiles[Vec(3, 3)].hasEvilCore = true;
       final evilArmy = EvilArmy("Pawns", initialPosition: Vec(3, 3));
       armies.evilArmies.add(evilArmy);
 

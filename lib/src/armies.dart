@@ -125,7 +125,7 @@ class Army {
 }
 
 class EvilArmy extends Army {
-  static const _generatingUnitsDuration = Duration(hours: 360);
+  static const _generatingUnitsDuration = Duration(hours: 360 * 2);
 
   final DateTime spawnTime;
 
