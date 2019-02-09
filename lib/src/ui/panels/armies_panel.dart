@@ -15,15 +15,22 @@ class UnitPanel extends Panel {
 
     var y = 2;
     for (final key in armies.playerArmies.keys) {
-      final unit = armies.playerArmies[key];
-      terminal.drawChar(0, y, key, unit.color);
-      terminal.writeAt(2, y, unit.name);
+      final army = armies.playerArmies[key];
+      terminal.drawChar(0, y, key, army.color);
+      terminal.writeAt(2, y, army.name);
 
       terminal.writeAt(
         14,
         y,
-        unit.hasArrived ? "STNDBY" : "TRANST",
-        unit.hasArrived ? TextTheme.detail : TextTheme.normal,
+        army.hasArrived ? "STNDBY" : "TRANST",
+        army.hasArrived ? TextTheme.detail : TextTheme.normal,
+      );
+
+      terminal.writeAt(
+        24,
+        y,
+        army.isAlive ? "OK" : "DEAD",
+        army.isAlive ? TextTheme.ok : TextTheme.highlight,
       );
 
       y++;

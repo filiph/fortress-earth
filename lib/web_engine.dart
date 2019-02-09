@@ -3,6 +3,7 @@ import 'dart:html' as html;
 import 'package:fortress_earth/src/constants.dart';
 import 'package:fortress_earth/src/data/earth_terrain.dart';
 import 'package:fortress_earth/src/shared_state.dart';
+import 'package:fortress_earth/src/simulation.dart';
 import 'package:fortress_earth/src/tile.dart';
 import 'package:fortress_earth/src/ui/game_screen.dart';
 import 'package:fortress_earth/src/ui/input.dart';
@@ -39,10 +40,11 @@ void runGame(html.CanvasElement canvas, {void Function() fullscreenCallback}) {
 
   final armies = Armies();
 
-  final state = SharedState();
+  final sim = Simulation(world, armies);
 
-  ui.push(
-      GameScreen(world, armies, state, fullscreenCallback: fullscreenCallback));
+  final state = UISharedState();
+
+  ui.push(GameScreen(sim, state, fullscreenCallback: fullscreenCallback));
 
   ui.handlingInput = true;
   ui.running = true;

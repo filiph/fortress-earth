@@ -6,7 +6,7 @@ import 'package:meta/meta.dart';
 import 'package:piecemeal/piecemeal.dart';
 
 class Armies {
-  final Map<int, PlayerArmy> playerArmies = Map.unmodifiable({
+  static final _defaultPlayerArmies = Map<int, PlayerArmy>.unmodifiable({
     KeyCode.one: PlayerArmy(KeyCode.one, "Marines", Color.lightGreen,
         initialDestination: Vec(92, 18)),
     KeyCode.two: PlayerArmy(KeyCode.two, "Marines", Color.lightGreen,
@@ -23,10 +23,32 @@ class Armies {
         initialDestination: Vec(40, 13)),
   });
 
-  final List<EvilArmy> evilArmies = [
+  static final _defaultEvilArmies = [
     EvilArmy("Cal Pawns", initialPosition: Vec(24, 13)),
     EvilArmy("EU Pawns", initialPosition: Vec(70, 13)),
   ];
+
+  final Map<int, PlayerArmy> playerArmies;
+
+  final List<EvilArmy> evilArmies;
+
+  Armies()
+      : playerArmies = _defaultPlayerArmies,
+        evilArmies = _defaultEvilArmies;
+
+  factory Armies.from(List<Army> source) {
+    int keyCode = 'a'.codeUnitAt(0);
+
+    final playerEntries =
+        source.whereType<PlayerArmy>().map((army) => MapEntry(keyCode++, army));
+    final playerMap = Map<int, PlayerArmy>.fromEntries(playerEntries);
+
+    final evilList = source.whereType<EvilArmy>().toList();
+
+    return Armies._(playerMap, evilList);
+  }
+
+  Armies._(this.playerArmies, this.evilArmies);
 
   Iterable<Army> get armies sync* {
     yield* playerArmies.values;
@@ -48,6 +70,8 @@ class Army {
   final bool isEvil;
 
   int strength = 500;
+  
+  bool isAlive = true;
 
   final String name;
 
@@ -81,11 +105,13 @@ class Army {
 
   @mustCallSuper
   void setDestination(Vec vec) {
+    assert(isAlive, "Trying to set destination of a dead army.");
     _destination = vec;
   }
 
   @mustCallSuper
   void updatePosition(World world) {
+    if (!isAlive) return;
     if (hasArrived) return;
 
     _beforeNextMove -= 1;

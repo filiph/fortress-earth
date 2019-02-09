@@ -4,6 +4,7 @@ import 'package:fortress_earth/src/armies.dart';
 import 'package:fortress_earth/src/city.dart';
 import 'package:fortress_earth/src/constants.dart';
 import 'package:fortress_earth/src/neighborhood.dart';
+import 'package:fortress_earth/src/pub_sub.dart';
 import 'package:fortress_earth/src/tile.dart';
 import 'package:malison/malison.dart';
 import 'package:piecemeal/piecemeal.dart';
@@ -66,7 +67,7 @@ class World {
     }
   }
 
-  void update(Iterable<Army> armies) {
+  void update(Iterable<Army> armies, PubSub pubSub) {
     for (int i = 0; i < 100; i++) {
       final x = _random.nextInt(mapWidth);
       final y = _random.nextInt(mapHeight);
@@ -75,7 +76,7 @@ class World {
       if (current.isOcean) continue;
       final hood = _getNeighborhoodOf(current);
       for (final army in armies) {
-        current.updateUnits(hood, army, currentTime);
+        current.updateUnits(hood, army, currentTime, pubSub);
         current.updateUnitDemand(hood, army);
         current.updateUnitDemandGradient(hood, army);
       }

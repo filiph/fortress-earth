@@ -1,5 +1,6 @@
 import 'package:fortress_earth/src/armies.dart';
 import 'package:fortress_earth/src/city.dart';
+import 'package:fortress_earth/src/simulation.dart';
 import 'package:fortress_earth/src/tile.dart';
 import 'package:fortress_earth/src/world.dart';
 import 'package:malison/malison.dart';
@@ -9,11 +10,19 @@ import 'package:test/test.dart';
 void main() {
   group('small flat 5x5 world without city', () {
     World world;
+    Simulation sim;
+    Armies armies;
 
     const height = 20;
 
     setUp(() {
       world = World(5, 5, (v) => Tile(v, height), cities: []);
+      armies = Armies.from([]);
+      sim = Simulation(world, armies);
+    });
+
+    tearDown(() {
+      sim.close();
     });
 
     test('everything stays neutral', () {
@@ -21,7 +30,7 @@ void main() {
       expect(world.tiles[Vec(3, 3)].isGood, isFalse);
 
       for (int i = 0; i < 1000; i++) {
-        world.update([]);
+        sim.update();
       }
 
       expect(world.tiles[Vec(3, 3)].isNeutral, isTrue);
@@ -31,6 +40,8 @@ void main() {
 
   group('small flat 5x5 world with city', () {
     World world;
+    Simulation sim;
+    Armies armies;
 
     PlayerArmy army;
 
@@ -41,6 +52,12 @@ void main() {
           World(5, 5, (v) => Tile(v, height), cities: [City("SFO", Vec(0, 0))]);
       army = PlayerArmy('a'.codeUnitAt(0), 'Army', Color.blue)
         ..setDestination(Vec(0, 0));
+      armies = Armies.from([army]);
+      sim = Simulation(world, armies);
+    });
+
+    tearDown(() {
+      sim.close();
     });
 
     test('good slowly overtakes', () {
@@ -48,8 +65,7 @@ void main() {
       expect(world.tiles[Vec(3, 3)].isGood, isFalse);
 
       for (int i = 0; i < 1000; i++) {
-        army.updatePosition(world);
-        world.update([army]);
+        sim.update();
       }
 
       expect(world.tiles[Vec(3, 3)].isNeutral, isFalse);
@@ -59,14 +75,13 @@ void main() {
     test('good vs evil successfully runs', () {
       world.tiles[Vec(3, 3)].hasEvilCore = true;
       final evilArmy = EvilArmy("Pawns", initialPosition: Vec(3, 3));
+      armies.evilArmies.add(evilArmy);
 
       expect(world.tiles[Vec(3, 3)].isNeutral, isTrue);
       expect(world.tiles[Vec(3, 3)].isGood, isFalse);
 
       for (int i = 0; i < 1000; i++) {
-        army.updatePosition(world);
-        evilArmy.updatePosition(world);
-        world.update([army, evilArmy]);
+        sim.update();
       }
 
       expect(world.tiles[Vec(3, 3)].isNeutral, isFalse);

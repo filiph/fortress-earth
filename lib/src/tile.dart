@@ -4,6 +4,7 @@ import 'package:fortress_earth/src/armies.dart';
 import 'package:fortress_earth/src/city.dart';
 import 'package:fortress_earth/src/constants.dart';
 import 'package:fortress_earth/src/neighborhood.dart';
+import 'package:fortress_earth/src/pub_sub.dart';
 import 'package:malison/malison.dart';
 import 'package:piecemeal/piecemeal.dart';
 
@@ -212,13 +213,14 @@ class Tile {
     _unitDemandGradient[army] += _unitDemand[army];
   }
 
-  void updateUnits(Neighborhood hood, Army army, DateTime currentTime) {
+  void updateUnits(
+      Neighborhood hood, Army army, DateTime currentTime, PubSub pubSub) {
     // Short-circuit ocean tiles: they can't update.
     if (isOcean) return;
 
     _units[army] ??= 0;
     if (_units[army] > 0) {
-      final attacked = _updateUnitsByTryingAttack(hood, army);
+      final attacked = _updateUnitsByTryingAttack(hood, army, pubSub);
       if (!attacked) {
         _updateUnitsByMovingWithNeedGradient(hood, army);
       }
@@ -226,7 +228,6 @@ class Tile {
 
     if (army.isEvil) {
       if (hasEvilCore && (army as EvilArmy).isGeneratingUnits(currentTime)) {
-        print("generating unit ($currentTime)");
         const coreSpawn = 50;
         _units[army] += coreSpawn;
         _updateGoodOrEvil(true, coreSpawn);
@@ -311,7 +312,7 @@ class Tile {
 
   /// This function updates both this and the target tile, if any
   /// opportunity for attack is found. Returns `true` if attack took place.
-  bool _updateUnitsByTryingAttack(Neighborhood hood, Army army) {
+  bool _updateUnitsByTryingAttack(Neighborhood hood, Army army, PubSub pubSub) {
     final unitSurplus = _getUnitSurplus(army).clamp(0, _units[army]);
     if (unitSurplus == 0) {
       // Don't attack if we're not meeting this tile's demand.
@@ -342,7 +343,7 @@ class Tile {
     }
 
     // Sort tiles from least to most occupied.
-    // TODO: just found the least without sorting everything
+    // TODO: just find the least without sorting everything
     enemyTiles.sort((a, b) => (a._good + a._evil).compareTo(b._good + b._evil));
     final targetTile = enemyTiles.first;
     // Since _good and _evil are mutually exclusive, this just gives the target
@@ -376,6 +377,9 @@ class Tile {
     });
     targetTile._good = 0;
     targetTile._evil = 0;
+
+    // Notify world that this tile has been taken over.
+    pubSub.publishTileTakenOver(TileTakenOverEvent(targetTile, army.isEvil));
 
     // Add attackers to target tile.
     targetTile._units[army] = attackerMoveForward;

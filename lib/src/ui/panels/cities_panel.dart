@@ -8,7 +8,7 @@ import 'package:piecemeal/piecemeal.dart';
 class CitiesPanel extends Panel {
   final List<City> _cities;
 
-  final SharedState state;
+  final UISharedState state;
 
   CitiesPanel(
       int x, int y, int width, int height, Map<Vec, City> cities, this.state)

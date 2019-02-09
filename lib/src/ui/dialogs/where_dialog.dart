@@ -8,7 +8,7 @@ class WhereDialog extends Screen<Input> {
 
   City _selectedCity;
 
-  final SharedState state;
+  final UISharedState state;
 
   WhereDialog(Iterable<City> cities, this.state)
       : cities = cities.toList(growable: false);

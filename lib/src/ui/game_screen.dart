@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:fortress_earth/src/armies.dart';
 import 'package:fortress_earth/src/constants.dart';
 import 'package:fortress_earth/src/shared_state.dart';
+import 'package:fortress_earth/src/simulation.dart';
 import 'package:fortress_earth/src/ui/dialogs/army_actions_dialog.dart';
 import 'package:fortress_earth/src/ui/input.dart';
 import 'package:fortress_earth/src/ui/panels/armies_panel.dart';
@@ -14,9 +15,11 @@ import 'package:malison/malison_web.dart';
 import 'package:piecemeal/piecemeal.dart';
 
 class GameScreen extends Screen<Input> {
-  final World world;
+  @deprecated
+  World get world => sim.world;
 
-  final Armies armies;
+  @deprecated
+  Armies get armies => sim.armies;
 
   final void Function() fullscreenCallback;
 
@@ -44,13 +47,13 @@ class GameScreen extends Screen<Input> {
 
   bool _showFramerate = false;
 
-  final SharedState state;
+  final UISharedState state;
 
-  GameScreen(this.world, this.armies, this.state, {this.fullscreenCallback})
+  GameScreen(this.sim, this.state, {this.fullscreenCallback})
       : _citiesPanel = CitiesPanel(mapOffsetLeft + mapWidth - 30,
-            mapOffsetTop + mapHeight - 4, 30, 16, world.cities, state),
-        _unitPanel = UnitPanel(
-            mapOffsetLeft + 50, mapOffsetTop + mapHeight - 2, 47, 14, armies);
+            mapOffsetTop + mapHeight - 4, 30, 16, sim.world.cities, state),
+        _unitPanel = UnitPanel(mapOffsetLeft + 50, mapOffsetTop + mapHeight - 2,
+            47, 14, sim.armies);
 
   void activate(Screen<Input> popped, Object result) {
     if (result == null) return;
@@ -193,12 +196,13 @@ class GameScreen extends Screen<Input> {
     _stopwatch.stop();
   }
 
+  final Simulation sim;
+
   void update() {
     _stopwatch.reset();
     _stopwatch.start();
 
-    world.update(armies.armies);
-    armies.update(world);
+    sim.update();
 
     dirty();
 

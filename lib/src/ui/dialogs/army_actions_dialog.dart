@@ -30,7 +30,7 @@ class ArmyActionsDialog extends Screen<Input> {
 
   final int _screenY;
 
-  final SharedState state;
+  final UISharedState state;
 
   ArmyActionsDialog(
       this._screenX, this._screenY, this.world, this.army, this.state);

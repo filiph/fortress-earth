@@ -1,3 +1,3 @@
-class SharedState {
+class UISharedState {
   bool citiesPanelActive = false;
 }
