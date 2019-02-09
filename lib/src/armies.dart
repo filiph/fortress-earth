@@ -20,7 +20,7 @@ class Armies {
         initialDestination: Vec(77, 17)),
     KeyCode.nine: PlayerArmy(KeyCode.nine, "Squad", Color.lightPurple),
     KeyCode.zero: PlayerArmy(KeyCode.zero, "HQ", Color.lightGold,
-        initialDestination: Vec(40, 13)),
+        initialDestination: Vec(39, 13)),
   });
 
   static final _defaultEvilArmies = [
