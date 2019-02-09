@@ -15,7 +15,7 @@ class World {
   static final defaultCities = [
     // From: http://www.freeworldmaps.net/cities/top50/top50-cities-world.png
     City("Los Angeles", Vec(22, 15)),
-    City("New York", Vec(40, 13)),
+    City("New York", Vec(39, 13)),
     City("Paris", Vec(66, 12)),
     City("Moscow", Vec(76, 10)),
     City("Beijing", Vec(109, 13)),
