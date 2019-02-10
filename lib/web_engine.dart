@@ -11,7 +11,6 @@ import 'package:fortress_earth/src/armies.dart';
 import 'package:fortress_earth/src/world.dart';
 import 'package:malison/malison.dart';
 import 'package:malison/malison_web.dart';
-import 'package:piecemeal/piecemeal.dart';
 
 void runGame(html.CanvasElement canvas, {void Function() fullscreenCallback}) {
   final terminal = CanvasTerminal(width, height,
@@ -27,7 +26,7 @@ void runGame(html.CanvasElement canvas, {void Function() fullscreenCallback}) {
   ui.keyPress.bind(Input.fullscreen, KeyCode.f, alt: true);
 
   ui.keyPress.bind(Input.debugNeedGradient, KeyCode.n, alt: true);
-  ui.keyPress.bind(Input.debugShowFramerate, KeyCode.f, alt: true);
+  ui.keyPress.bind(Input.debugShowFramerate, KeyCode.d, alt: true);
 
   final world = World(
     mapWidth,
