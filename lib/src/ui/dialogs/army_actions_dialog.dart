@@ -33,7 +33,10 @@ class ArmyActionsDialog extends Screen<Input> {
   final UISharedState state;
 
   ArmyActionsDialog(
-      this._screenX, this._screenY, this.world, this.army, this.state);
+      this._screenX, this._screenY, this.world, this.army, this.state) {
+    commandsPanel = CommandsPanel(_screenX, _screenY, 47, 5, army.name,
+        ["Go", "Upgrade", "Heal", "Interrogate"]);
+  }
 
   bool get isTransparent => true;
 
@@ -64,18 +67,13 @@ class ArmyActionsDialog extends Screen<Input> {
     return true;
   }
 
+  CommandsPanel commandsPanel;
+
   void render(Terminal terminal) {
     terminal.rect(_screenX, _screenY, 47, 6).clear();
-    final panel = CommandsPanel(
-        _screenX,
-        _screenY,
-        47,
-        5,
-        army.name,
-        ["Go", "Upgrade", "Heal", "Interrogate"],
-        _selectedInput == null
-            ? TextTheme.important
-            : Panel.defaultBorderColor);
-    panel.render(terminal);
+
+    commandsPanel.borderColor =
+        _selectedInput == null ? TextTheme.important : Panel.defaultBorderColor;
+    commandsPanel.render(terminal);
   }
 }

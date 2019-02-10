@@ -1,3 +1,4 @@
+import 'package:fortress_earth/src/ui/animation.dart';
 import 'package:fortress_earth/src/ui/panels/panel.dart';
 import 'package:fortress_earth/src/ui/theme.dart';
 import 'package:malison/malison.dart';
@@ -7,11 +8,12 @@ class CommandsPanel extends Panel {
 
   final List<String> commands;
 
-  CommandsPanel(int x, int y, int width, int height, this.title, this.commands,
-      this.borderColor)
-      : super(x, y, width, height);
+  Color borderColor;
 
-  final Color borderColor;
+  CommandsPanel(int x, int y, int width, int height, this.title, this.commands)
+      : super(x, y, width, height) {
+    addAnimation(WipeAnimation());
+  }
 
   @override
   void renderPanel(Terminal terminal) {
