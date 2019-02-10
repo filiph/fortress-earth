@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:malison/malison.dart';
 import 'package:meta/meta.dart';
@@ -44,7 +45,6 @@ class BlinkAnimation extends Animation {
   }
 }
 
-
 class WipeAnimation extends Animation {
   /// Number of frames.
   static const length = 10;
@@ -55,9 +55,21 @@ class WipeAnimation extends Animation {
       finish();
       return;
     }
-    final offset = terminal.width ~/ length * time;
 
-    terminal.rect(offset, 0, terminal.width - offset, terminal.height).clear();
+    final progress = time / length;
+    assert(progress >= 0);
+    assert(progress <= 1);
+    final easeOutProgress = sqrt(progress);
+    final offsetX = (terminal.width * easeOutProgress).round();
+    final offsetY = (terminal.height * easeOutProgress).round();
+
+    terminal
+        .rect(
+          offsetX,
+          offsetY,
+          terminal.width - offsetX,
+          terminal.height - offsetY,
+        )
+        .clear();
   }
 }
-
