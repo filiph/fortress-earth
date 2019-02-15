@@ -70,7 +70,7 @@ class Army {
   final bool isEvil;
 
   int strength = 500;
-  
+
   bool isAlive = true;
 
   final String name;
@@ -100,6 +100,13 @@ class Army {
   }
 
   bool get hasArrived => _destination == _pos;
+
+  /// Max number of units that this army can land with in an enemy-controlled
+  /// city.
+  int get maxUnitsPerInvasion => maxUnitsPerRequest * 10;
+
+  /// Max number of units that this army can deploy at one time.
+  int get maxUnitsPerRequest => 10;
 
   Vec get pos => _pos;
 
@@ -158,6 +165,14 @@ class PlayerArmy extends Army {
   /// [_latestCity] with one difference: [deployedAt] reverts to `null`
   /// as soon as this army leaves the city.
   City get deployedAt => _deployedAt;
+
+  bool canDisembarkTo(Vec position) {
+    if (!hasArrived) return false;
+
+    final distanceSquared = (position - pos).lengthSquared;
+    const maxDistance = 2;
+    return distanceSquared <= maxDistance * maxDistance;
+  }
 
   @override
   void setDestination(Vec vec) {

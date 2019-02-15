@@ -18,8 +18,6 @@ double lerpDouble(num value, num min, num max, double outMin, double outMax) {
 }
 
 class City {
-  static const maxUnitsPerRequest = 10;
-
   final String name;
 
   final int keyCode;
@@ -33,10 +31,20 @@ class City {
   ///
   /// When this is lower than [getAvailableUnits()], then the city can release
   /// more units. When it's higher, the city will take them back.
+  ///
+  /// TODO: move this to army, then make sure units deployed where the army
+  ///       isn't will just go back to the city
   Map<Army, int> _releasedUnits = Map<Army, int>();
 
   City(this.name, this.pos, {int keyCode})
       : keyCode = keyCode ?? name.codeUnitAt(0);
+
+  /// The sum of all un-released strength of the military stationed at this
+  /// city.
+  int get availableUnitsAll => max(
+      0,
+      _armies.map((a) => a.strength).fold(0, _sum) -
+          _releasedUnits.values.fold<int>(0, _sum));
 
   /// Sum of the deficit of all armies. Only for show.
   @deprecated
@@ -51,13 +59,6 @@ class City {
     assert(army.deployedAt == this);
     _armies.add(army);
   }
-
-  /// The sum of all un-released strength of the military stationed at this
-  /// city.
-  int get availableUnitsAll => max(
-      0,
-      _armies.map((a) => a.strength).fold(0, _sum) -
-          _releasedUnits.values.fold<int>(0, _sum));
 
   int getAvailableUnits(Army army) {
     if (!_armies.contains(army)) return 0;
@@ -97,14 +98,18 @@ class City {
   }
 
   /// Claims units that cannot be available elsewhere. Called by tiles.
-  int requestUnits(Army army, Tile tile, Neighborhood hood) {
+  /// TODO: move to PlayerArmy
+  int requestUnits(PlayerArmy army, Tile tile, Neighborhood hood) {
     // Evil tiles cannot request units.
     if (tile.isEvil) return 0;
 
+    // Armies in flight cannot offer units.
+    if (!army.hasArrived) return 0;
+
     // Tiles around cities can get units if available.
-    final distance = (hood.pos - pos).length;
-    if (distance <= 2) {
+    if (army.canDisembarkTo(hood.pos)) {
       final request = hood.evil.ceil() + 10;
+      final distance = (hood.pos - pos).length;
       final distanceModifiedRequest = request / (1 + distance);
       return _computeAndSubstractGiven(army, distanceModifiedRequest.round());
     }
@@ -114,7 +119,7 @@ class City {
   }
 
   int _computeAndSubstractGiven(Army army, int requested) {
-    final willingToGive = min(getAvailableUnits(army), maxUnitsPerRequest);
+    final willingToGive = min(getAvailableUnits(army), army.maxUnitsPerRequest);
     final given = min(willingToGive.round(), requested);
     _releasedUnits[army] ??= 0;
     _releasedUnits[army] += given;

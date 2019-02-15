@@ -10,6 +10,23 @@ import 'package:piecemeal/piecemeal.dart';
 
 final _random = Random();
 
+/// Once we know the attack will succeed, this function returns the exact
+/// results.
+_FightResult _resolveSuccessfulAttack(
+    int attackerStrength, int defenderStrength) {
+  assert(attackerStrength >= defenderStrength);
+  final targetLosses = defenderStrength;
+  final attackerLosses = targetLosses ~/ 2;
+  final attackerStayBehind = 1;
+  return _FightResult(
+    attackerStartingStrength: attackerStrength,
+    defenderStartingStrength: defenderStrength,
+    defenderLosses: targetLosses,
+    attackerLosses: attackerLosses,
+    attackerStayBehind: attackerStayBehind,
+  );
+}
+
 /// TODO: extract the `update*` methods to a separate `*System` classes.
 ///       (Because Tile should not depend on City / Army.
 class Tile {
@@ -249,15 +266,25 @@ class Tile {
 
     // Bail out if there's no closest city. In that case, nothing to do for
     // good units.
-    if (hood.closestCity == null) return;
+    if (closestCity == null) return;
+
+    // Try invasion.
+    final didInvade = _updateUnitsByTryingInvasion(army, pubSub);
+
+    // Once we invaded, don't do another update.
+    if (didInvade) return;
+
+    // The following logic doesn't make sense for tiles that are owned
+    // by enemy faction.
+    if (isEnemyFactionOccupied(army)) return;
 
     // Now ask for reinforcements.
-    final reinforcements = hood.closestCity.requestUnits(army, this, hood);
+    final reinforcements = closestCity.requestUnits(army, this, hood);
     _units[army] += reinforcements;
     _updateGoodOrEvil(false, reinforcements);
 
     // Or offer good units back if we're at the place.
-    final withdrawals = hood.closestCity.offerUnits(army, this, _units[army]);
+    final withdrawals = closestCity.offerUnits(army, this, _units[army]);
     _units[army] -= withdrawals;
     _updateGoodOrEvil(false, withdrawals);
   }
@@ -275,6 +302,27 @@ class Tile {
     } else {
       _good += difference;
     }
+  }
+
+  void _updateTileAfterBeingTakenOver(
+      Army army, PubSub pubSub, _FightResult result) {
+    _units.updateAll((a, n) {
+      if (n == 0) return 0;
+      assert(a.isEvil != army.isEvil,
+          "There was a friendly unit in attacked tile $this");
+      a.strength -= n;
+      // TODO: report loss of units to pubSub (and update Army.strength somewhere else)
+      return 0;
+    });
+    _good = 0;
+    _evil = 0;
+
+    // Notify world that this tile has been taken over.
+    pubSub.publishTileTakenOver(TileTakenOverEvent(this, army.isEvil));
+
+    // Add attackers to target tile.
+    _units[army] = result.attackerMoveForward;
+    _updateGoodOrEvil(army.isEvil, result.attackerMoveForward);
   }
 
   /// Move with the need gradient, between non-enemy tiles.
@@ -357,47 +405,70 @@ class Tile {
     // Sort tiles from least to most occupied.
     // TODO: just find the least without sorting everything
     enemyTiles.sort((a, b) => (a._good + a._evil).compareTo(b._good + b._evil));
-    final targetTile = enemyTiles.first;
+    final defenderTile = enemyTiles.first;
     // Since _good and _evil are mutually exclusive, this just gives the target
     // tile's strength, regardless of affiliation.
-    final targetStrength = targetTile._good + targetTile._evil;
+    final defenderStrength = defenderTile._good + defenderTile._evil;
 
-    if (unitSurplus <= targetStrength) {
+    if (unitSurplus <= defenderStrength) {
       // Too weak to attack
       return false;
     }
 
-    final targetLosses = targetStrength;
-    final attackerStartingStrength = _units[army];
-    final attackerLosses = targetLosses ~/ 2;
-    final attackerStayBehind = 1;
-    final attackerMoveForward =
-        attackerStartingStrength - attackerLosses - attackerStayBehind;
+    // TODO: allow all armies on one tile to attack at once, not just [army] here
+    var result = _resolveSuccessfulAttack(_units[army], defenderStrength);
 
     // Update this tile.
-    _units[army] = attackerStayBehind;
+    _units[army] = result.attackerStayBehind;
     _updateGoodOrEvil(
-        army.isEvil, attackerStayBehind - attackerStartingStrength);
+        army.isEvil,
+        // The difference between the original strength on this tile
+        // and the resulting one (after some attackers die and others
+        // move forward).
+        result.attackerStayBehind - result.attackerStartingStrength);
 
-    // Remove defenders from target tile.
-    targetTile._units.updateAll((a, n) {
-      if (n == 0) return 0;
-      assert(a.isEvil != army.isEvil,
-          "There was a friendly unit in attacked tile $targetTile");
-      a.strength -= n;
-      // TODO: report loss of units to pubSub (an update Army.strength somewhere
-      return 0;
-    });
-    targetTile._good = 0;
-    targetTile._evil = 0;
-
-    // Notify world that this tile has been taken over.
-    pubSub.publishTileTakenOver(TileTakenOverEvent(targetTile, army.isEvil));
-
-    // Add attackers to target tile.
-    targetTile._units[army] = attackerMoveForward;
-    targetTile._updateGoodOrEvil(army.isEvil, attackerMoveForward);
+    // Remove defenders, add attackers, and notify via pubsub.
+    defenderTile._updateTileAfterBeingTakenOver(army, pubSub, result);
 
     return true;
   }
+
+  /// Try invading the tile from above.
+  bool _updateUnitsByTryingInvasion(PlayerArmy army, PubSub pubSub) {
+    if (army.pos != closestCity.pos) return false;
+    if (!isEnemyFactionOccupied(army)) return false;
+    if (!army.canDisembarkTo(pos)) return false;
+
+    final available = closestCity.getAvailableUnits(army);
+    if (available == 0) return false;
+
+    final force = min(army.maxUnitsPerInvasion, available);
+
+    // TODO: allow invasion on stronger tiles, leading to attacker losses
+    if (force <= evil) return false;
+
+    final result = _resolveSuccessfulAttack(force, evil);
+
+    // Remove defenders from target tile.
+    _updateTileAfterBeingTakenOver(army, pubSub, result);
+
+    return true;
+  }
+}
+
+class _FightResult {
+  final int defenderLosses;
+  final int attackerStartingStrength;
+  final int defenderStartingStrength;
+  final int attackerLosses;
+  final int attackerStayBehind;
+  _FightResult(
+      {this.attackerStartingStrength,
+      this.defenderStartingStrength,
+      this.defenderLosses,
+      this.attackerLosses,
+      this.attackerStayBehind});
+
+  int get attackerMoveForward =>
+      attackerStartingStrength - attackerLosses - attackerLosses;
 }
