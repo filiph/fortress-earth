@@ -15,12 +15,6 @@ import 'package:malison/malison_web.dart';
 import 'package:piecemeal/piecemeal.dart';
 
 class GameScreen extends Screen<Input> {
-  @deprecated
-  World get world => sim.world;
-
-  @deprecated
-  Armies get armies => sim.armies;
-
   final void Function() fullscreenCallback;
 
   Stopwatch _stopwatch = Stopwatch();
@@ -49,11 +43,19 @@ class GameScreen extends Screen<Input> {
 
   final UISharedState state;
 
+  final Simulation sim;
+
   GameScreen(this.sim, this.state, {this.fullscreenCallback})
       : _citiesPanel = CitiesPanel(mapOffsetLeft + mapWidth - 30,
             mapOffsetTop + mapHeight - 4, 30, 16, sim.world.cities, state),
         _unitPanel = UnitPanel(mapOffsetLeft + 50, mapOffsetTop + mapHeight - 2,
             47, 14, sim.armies);
+
+  @deprecated
+  Armies get armies => sim.armies;
+
+  @deprecated
+  World get world => sim.world;
 
   void activate(Screen<Input> popped, Object result) {
     if (result == null) return;
@@ -82,6 +84,10 @@ class GameScreen extends Screen<Input> {
 
       case Input.debugShowFramerate:
         _showFramerate = !_showFramerate;
+        break;
+
+      case Input.debugAddCore:
+        sim.addEnemyCore();
         break;
 
       default:
@@ -197,8 +203,6 @@ class GameScreen extends Screen<Input> {
     _latestRenderTime = _stopwatch.elapsedMicroseconds;
     _stopwatch.stop();
   }
-
-  final Simulation sim;
 
   void update() {
     _stopwatch.reset();

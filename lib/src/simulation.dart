@@ -1,6 +1,12 @@
+import 'dart:math';
+
 import 'package:fortress_earth/src/armies.dart';
 import 'package:fortress_earth/src/pub_sub.dart';
+import 'package:fortress_earth/src/tile.dart';
 import 'package:fortress_earth/src/world.dart';
+import 'package:piecemeal/piecemeal.dart';
+
+Random _random = Random();
 
 class Simulation {
   final World world;
@@ -15,13 +21,41 @@ class Simulation {
     pubSub.seal();
   }
 
-  void update() {
-    world.update(armies.armies, pubSub);
-    armies.update(world);
+  /// Adds an enemy core to the map.
+  ///
+  /// If no place can be found, then the method will throw in debug mode
+  /// and will have no effect in production.
+  void addEnemyCore() {
+    // Try
+    Tile tile;
+    for (var i = 0; i < 100; i++) {
+      var pos = Vec(
+          _random.nextInt(world.mapWidth), _random.nextInt(world.mapHeight));
+      var candidate = world.tiles[pos];
+      if (candidate.isOcean) continue;
+      if (candidate.isGood) continue;
+      if (candidate.isEvil) continue;
+      tile = candidate;
+    }
+    assert(tile != null);
+    // In production, just ignore the call.
+    if (tile == null) return;
+
+    var army = EvilArmy(
+      "Arrivals",
+      initialPosition: tile.pos,
+      spawnTime: world.currentTime,
+    );
+    armies.evilArmies.add(army);
   }
 
   void close() {
     pubSub.close();
+  }
+
+  void update() {
+    world.update(armies.armies, pubSub);
+    armies.update(world);
   }
 
   void _handleTileTakenOver(TileTakenOverEvent event) {

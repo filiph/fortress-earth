@@ -49,6 +49,9 @@ class Input {
   /// Debug framerate.
   static const debugShowFramerate = Input("debugShowFramerate");
 
+  /// Debug add core.
+  static const debugAddCore = Input("debugAddCore");
+
   final String name;
 
   const Input(this.name);

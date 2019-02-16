@@ -23,9 +23,9 @@ class Armies {
         initialDestination: Vec(39, 13)),
   });
 
-  static final _defaultEvilArmies = [
-    EvilArmy("Cal Pawns", initialPosition: Vec(24, 13)),
-    EvilArmy("EU Pawns", initialPosition: Vec(70, 13)),
+  static final _defaultEvilArmies = <EvilArmy>[
+    //EvilArmy("Cal Pawns", initialPosition: Vec(24, 13)),
+    //EvilArmy("EU Pawns", initialPosition: Vec(70, 13)),
   ];
 
   final Map<int, PlayerArmy> playerArmies;
