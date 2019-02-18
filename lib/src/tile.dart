@@ -327,34 +327,12 @@ class Tile {
 
   /// Move with the need gradient, between non-enemy tiles.
   void _updateUnitsByMovingWithNeedGradient(Neighborhood hood, Army army) {
-    final Vec homePosition =
-        (army is PlayerArmy ? (closestCity?.pos ?? hood.pos) : (army.pos));
-    final int currentDistanceSquaredFromHome =
-        (homePosition - hood.pos).lengthSquared;
     final neediestTile = hood.neighbors.fold<Tile>(null, (prev, tile) {
       if (tile.isOcean) return prev;
       if (tile.isEnemyFactionOccupied(army)) return prev;
-      if (currentDistanceSquaredFromHome >
-          army.maxDeploymentRange * army.maxDeploymentRange) {
-        // We're too far away. Prefer tiles that are closer.
-        // TODO: Do this via following "go to safety" gradient
-        // once https://trello.com/c/RYVplFPk/785-global-demand-fields is done.
-        var tileDistance = (tile.pos - homePosition).lengthSquared;
-        var prevDistance =
-            prev != null ? (prev.pos - homePosition).lengthSquared : 0xFFFFFF;
-        if (tileDistance < prevDistance) {
-          return tile;
-        } else {
-          return prev;
-        }
-      }
-      if (tile.closestCity != null &&
-          (tile.closestCity.pos - tile.pos).lengthSquared >
-              army.maxDeploymentRange * army.maxDeploymentRange) {
+      if (!army.canExpandTo(tile) && army.canExpandTo(hood.center)) {
         // No movement beyond max deployment range.
-        // TODO: check deployment range of army
-        //       check that we're moving _beyond_ the range. Movement
-        //       from outside _towards_ the deploy area is of course okay.
+        // But okay if the current tile is already beyond max deployment range.
         return prev;
       }
       if (prev == null) return tile;
@@ -405,7 +383,7 @@ class Tile {
     final friendlyTilesCount =
         hood.neighbors.where((t) => t.isEvil == army.isEvil).length;
     final enemyTiles = hood.neighbors
-        .where((t) => t.isEnemyFactionOccupied(army))
+        .where((t) => t.isEnemyFactionOccupied(army) && army.canExpandTo(t))
         .toList(growable: false);
 
     if (enemyTiles.length == 0) {

@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:fortress_earth/src/armies.dart';
 import 'package:fortress_earth/src/constants.dart';
 import 'package:fortress_earth/src/shared_state.dart';
 import 'package:fortress_earth/src/simulation.dart';
@@ -9,7 +8,6 @@ import 'package:fortress_earth/src/ui/input.dart';
 import 'package:fortress_earth/src/ui/panels/armies_panel.dart';
 import 'package:fortress_earth/src/ui/panels/chat_panel.dart';
 import 'package:fortress_earth/src/ui/panels/cities_panel.dart';
-import 'package:fortress_earth/src/world.dart';
 import 'package:malison/malison.dart';
 import 'package:malison/malison_web.dart';
 import 'package:piecemeal/piecemeal.dart';
@@ -51,12 +49,6 @@ class GameScreen extends Screen<Input> {
         _unitPanel = UnitPanel(mapOffsetLeft + 50, mapOffsetTop + mapHeight - 2,
             47, 14, sim.armies);
 
-  @deprecated
-  Armies get armies => sim.armies;
-
-  @deprecated
-  World get world => sim.world;
-
   void activate(Screen<Input> popped, Object result) {
     if (result == null) return;
 
@@ -65,7 +57,7 @@ class GameScreen extends Screen<Input> {
 
     final dialogResult = result as GoDialogResult;
     dialogResult.army.setDestination(dialogResult.destination.pos);
-    world.clearDemand(dialogResult.army);
+    sim.world.clearDemand(dialogResult.army);
   }
 
   bool handleInput(Input input) {
@@ -98,10 +90,10 @@ class GameScreen extends Screen<Input> {
   }
 
   bool keyDown(int keyCode, {bool shift, bool alt}) {
-    for (final key in armies.playerArmies.keys) {
+    for (final key in sim.armies.playerArmies.keys) {
       if (key == keyCode) {
-        ui.push(ArmyActionsDialog(50, mapOffsetTop + mapHeight - 6, world,
-            armies.playerArmies[key], state));
+        ui.push(ArmyActionsDialog(50, mapOffsetTop + mapHeight - 6, sim.world,
+            sim.armies.playerArmies[key], state));
         return true;
       }
     }
@@ -130,7 +122,7 @@ class GameScreen extends Screen<Input> {
         final screenX = mapOffsetLeft + x;
         final screenY = mapOffsetTop + y;
         final vec = Vec(x, y);
-        final tile = world.tiles[vec];
+        final tile = sim.world.tiles[vec];
 
         String char;
         Color foregroundColor;
@@ -142,9 +134,9 @@ class GameScreen extends Screen<Input> {
               _normalizeValue(value, _gradientLowClamp, _gradientHighClamp);
           int index = (normalized * 10).floor();
           char = const [0, 1, 2, 3, 4, 5, 5, 6, 7, 8, 9][index].toString();
-        } else if (world.cities.containsKey(vec)) {
+        } else if (sim.world.cities.containsKey(vec)) {
           char = '■';
-          foregroundColor = Color.yellow;
+          foregroundColor = tile.isEvil ? Color.red : Color.yellow;
         } else if (tile.isNeutral) {
           char = '░';
         } else {
@@ -165,14 +157,14 @@ class GameScreen extends Screen<Input> {
     }
 
     // Evil armies on map.
-    for (final army in armies.evilArmies) {
+    for (final army in sim.armies.evilArmies) {
       if (!army.isAlive) continue;
       terminal.drawChar(mapOffsetLeft + army.pos.x, mapOffsetTop + army.pos.y,
           'X'.codeUnitAt(0), Color.black, army.color);
     }
 
     // Player armies on map.
-    for (final army in armies.playerArmies.values) {
+    for (final army in sim.armies.playerArmies.values) {
       if (!army.isAlive) continue;
       terminal.drawChar(mapOffsetLeft + army.pos.x, mapOffsetTop + army.pos.y,
           army.keyCode, Color.black, army.color);
@@ -189,7 +181,7 @@ class GameScreen extends Screen<Input> {
 
     terminal.writeAt(width - 30, 0, "  Fortress Earth - tech demo  ");
     terminal.writeAt(
-        width - 30, 1, "   ${world.currentTime.toIso8601String()}    ");
+        width - 30, 1, "   ${sim.world.currentTime.toIso8601String()}    ");
 
     if (_showFramerate) {
       final renderMilliseconds =

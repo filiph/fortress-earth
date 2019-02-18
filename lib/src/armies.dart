@@ -1,5 +1,6 @@
 import 'package:fortress_earth/src/city.dart';
 import 'package:fortress_earth/src/constants.dart';
+import 'package:fortress_earth/src/tile.dart';
 import 'package:fortress_earth/src/world.dart';
 import 'package:malison/malison.dart';
 import 'package:meta/meta.dart';
@@ -66,7 +67,7 @@ class Armies {
   }
 }
 
-class Army {
+abstract class Army {
   final bool isEvil;
 
   int strength = 500;
@@ -101,6 +102,11 @@ class Army {
 
   bool get hasArrived => _destination == _pos;
 
+  /// Just [maxDeploymentRange] squared. Useful for distance comparisons
+  /// without the need to compute the square root.
+  double get maxDeploymentRangeSquared =>
+      maxDeploymentRange * maxDeploymentRange;
+
   /// Max number of units that this army can land with in an enemy-controlled
   /// city.
   int get maxUnitsPerInvasion => maxUnitsPerRequest * 10;
@@ -109,6 +115,10 @@ class Army {
   int get maxUnitsPerRequest => 10;
 
   Vec get pos => _pos;
+
+  /// Returns `true` if [tile] is in [maxDeploymentRange] and army is
+  /// in expansion mode.
+  bool canExpandTo(Tile tile);
 
   @mustCallSuper
   void setDestination(Vec vec) {
@@ -139,6 +149,10 @@ class EvilArmy extends Army {
   EvilArmy(String name, {DateTime spawnTime, Vec initialPosition})
       : spawnTime = spawnTime ?? beginningOfPlay,
         super._(name, Color.red, true, initialPosition: initialPosition);
+
+  /// Always returns `true` for [EvilArmy].
+  @override
+  bool canExpandTo(Tile tile) => true;
 
   bool isGeneratingUnits(DateTime time) {
     assert(time.isUtc);
@@ -172,6 +186,27 @@ class PlayerArmy extends Army {
     final distanceSquared = (position - pos).lengthSquared;
     const maxDistance = 2;
     return distanceSquared <= maxDistance * maxDistance;
+  }
+
+  /// Returns `true` if [tile] is in [maxDeploymentRange] from "home".
+  bool canExpandTo(Tile tile) {
+    Vec home;
+    if (deployedAt != null) {
+      home = deployedAt.pos;
+    }
+    if (_latestCity != null) {
+      if (home == null) {
+        home = _latestCity.pos;
+      } else {
+        if ((_latestCity.pos - tile.pos).lengthSquared <
+            (home - tile.pos).lengthSquared) {
+          home = _latestCity.pos;
+        }
+      }
+    }
+
+    final distanceSquared = (tile.pos - home).lengthSquared;
+    return distanceSquared <= maxDeploymentRangeSquared;
   }
 
   @override
