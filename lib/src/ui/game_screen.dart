@@ -51,13 +51,18 @@ class GameScreen extends Screen<Input> {
 
   void activate(Screen<Input> popped, Object result) {
     if (result == null) return;
-
-    assert(result is GoDialogResult);
     assert(popped is ArmyActionsDialog);
 
-    final dialogResult = result as GoDialogResult;
-    dialogResult.army.setDestination(dialogResult.destination.pos);
-    sim.world.clearDemand(dialogResult.army);
+    if (result is GoDialogResult) {
+      result.army.setDestination(result.destination.pos);
+      sim.world.clearDemand(result.army);
+    } else if (result is ModeDialogResult) {
+      print("changed mode of ${result.army} to ${result.rangeMode}");
+      result.army.setRangeMode(result.rangeMode);
+      sim.world.clearDemand(result.army);
+    } else {
+      throw UnimplementedError(result);
+    }
   }
 
   bool handleInput(Input input) {
@@ -127,7 +132,9 @@ class GameScreen extends Screen<Input> {
         String char;
         Color foregroundColor;
         if (_showNeedGradient) {
-          double value = tile.debugEvilDemandGradient;
+          //double value = tile.debugEvilDemandGradient;
+          double value = tile.getDebugArmyDemandGradient(
+              sim.armies.playerArmies[KeyCode.zero]);
           _gradientLowClamp = min(value, _gradientLowClamp);
           _gradientHighClamp = max(value, _gradientHighClamp);
           double normalized =

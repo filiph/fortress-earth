@@ -39,6 +39,9 @@ class Input {
 
   /// Verbs. These open UIs.
   static const go = Input("send");
+  static const tight = Input("tight");
+  static const expanded = Input("expanded");
+  static const destroy = Input("destroy");
 
   /// Interface inputs.
   static const fullscreen = Input("fullscreen");

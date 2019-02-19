@@ -76,9 +76,6 @@ abstract class Army {
 
   final String name;
 
-  /// Distance from army [pos] after which units cannot go further.
-  final double maxDeploymentRange;
-
   final Color color;
 
   /// Current position. Starts in the middle of the Atlantic.
@@ -94,17 +91,18 @@ abstract class Army {
   Army._(this.name, this.color, this.isEvil,
       {@required initialPosition, Vec initialDestination})
       : assert(initialPosition != null),
-        _pos = initialPosition,
-        maxDeploymentRange =
-            isEvil ? double.infinity : defaultMaxDeploymentRange {
+        _pos = initialPosition {
     _destination = initialDestination ?? _pos;
   }
 
   bool get hasArrived => _destination == _pos;
 
+  /// Distance from army [pos] after which units cannot go further.
+  double get maxDeploymentRange;
+
   /// Just [maxDeploymentRange] squared. Useful for distance comparisons
   /// without the need to compute the square root.
-  double get maxDeploymentRangeSquared =>
+  double get _maxDeploymentRangeSquared =>
       maxDeploymentRange * maxDeploymentRange;
 
   /// Max number of units that this army can land with in an enemy-controlled
@@ -125,6 +123,9 @@ abstract class Army {
     assert(isAlive, "Trying to set destination of a dead army.");
     _destination = vec;
   }
+
+  @override
+  String toString() => "$runtimeType<$name>";
 
   @mustCallSuper
   void updatePosition(World world) {
@@ -150,6 +151,9 @@ class EvilArmy extends Army {
       : spawnTime = spawnTime ?? beginningOfPlay,
         super._(name, Color.red, true, initialPosition: initialPosition);
 
+  @override
+  double get maxDeploymentRange => double.infinity;
+
   /// Always returns `true` for [EvilArmy].
   @override
   bool canExpandTo(Tile tile) => true;
@@ -169,6 +173,8 @@ class PlayerArmy extends Army {
 
   City _deployedAt;
 
+  RangeMode _rangeMode = RangeMode.tight;
+
   PlayerArmy(this.keyCode, String name, Color color,
       {Vec initialPosition = const Vec(50, 18), Vec initialDestination})
       : super._(name, color, false,
@@ -180,6 +186,20 @@ class PlayerArmy extends Army {
   /// as soon as this army leaves the city.
   City get deployedAt => _deployedAt;
 
+  @override
+  double get maxDeploymentRange {
+    switch (_rangeMode) {
+      case RangeMode.tight:
+        return 3;
+      case RangeMode.expanded:
+        return defaultMaxDeploymentRange;
+      case RangeMode.seekAndDestroy:
+        return double.infinity;
+      default:
+        throw StateError('Unhandled range mode: $_rangeMode');
+    }
+  }
+
   bool canDisembarkTo(Vec position) {
     if (!hasArrived) return false;
 
@@ -190,29 +210,18 @@ class PlayerArmy extends Army {
 
   /// Returns `true` if [tile] is in [maxDeploymentRange] from "home".
   bool canExpandTo(Tile tile) {
-    Vec home;
-    if (deployedAt != null) {
-      home = deployedAt.pos;
-    }
-    if (_latestCity != null) {
-      if (home == null) {
-        home = _latestCity.pos;
-      } else {
-        if ((_latestCity.pos - tile.pos).lengthSquared <
-            (home - tile.pos).lengthSquared) {
-          home = _latestCity.pos;
-        }
-      }
-    }
+    if (deployedAt == null) return false;
 
+    final Vec home = deployedAt.pos;
     final distanceSquared = (tile.pos - home).lengthSquared;
-    return distanceSquared <= maxDeploymentRangeSquared;
+    return distanceSquared <= _maxDeploymentRangeSquared;
   }
 
   @override
   void setDestination(Vec vec) {
     if (_deployedAt?.pos == vec) {
       // Setting the destination we're currently at.
+      super.setDestination(vec);
       return;
     }
     _latestCity = _deployedAt;
@@ -220,6 +229,10 @@ class PlayerArmy extends Army {
       _deployedAt.release(this);
     }
     super.setDestination(vec);
+  }
+
+  void setRangeMode(RangeMode rangeMode) {
+    _rangeMode = rangeMode;
   }
 
   @override
@@ -235,4 +248,16 @@ class PlayerArmy extends Army {
       _latestCity = city;
     }
   }
+}
+
+/// Mode of operation for a given [PlayerArmy].
+enum RangeMode {
+  /// Hug the city.
+  tight,
+
+  /// Expand to an expanded area around the city.
+  expanded,
+
+  /// Just go and destroy.
+  seekAndDestroy
 }

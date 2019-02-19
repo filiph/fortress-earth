@@ -24,9 +24,7 @@ class CommandsPanel extends Panel {
     var x = 1;
     for (final command in commands) {
       // Hack: everything except the first command is disabled.
-      bool disabled = x != 1;
-      terminal.writeAt(
-          x, y, command, disabled ? TextTheme.normal : TextTheme.important);
+      terminal.writeAt(x, y, command, TextTheme.important);
       terminal.writeAt(x, y + 1, '▀', TextTheme.detail);
       x += command.length + 4;
     }

@@ -62,6 +62,7 @@ class World {
 
   /// Resets demand fields for the given army.
   void clearDemand(Army army) {
+    print("Clearing demand for $army");
     for (final tile in tiles) {
       tile.clearDemand(army);
     }
@@ -79,6 +80,8 @@ class World {
         current.updateUnits(hood, army, currentTime, pubSub);
         current.updateUnitDemand(hood, army);
         current.updateUnitDemandGradient(hood, army);
+        current.updateUnitSafeDeployment(hood, army);
+        current.updateUnitSafeDeploymentGradient(hood, army);
       }
     }
 

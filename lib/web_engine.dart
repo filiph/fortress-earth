@@ -22,6 +22,9 @@ void runGame(html.CanvasElement canvas, {void Function() fullscreenCallback}) {
   ui.keyPress.bind(Input.cancel, KeyCode.delete);
 
   ui.keyPress.bind(Input.go, KeyCode.g);
+  ui.keyPress.bind(Input.tight, KeyCode.t);
+  ui.keyPress.bind(Input.expanded, KeyCode.e);
+  ui.keyPress.bind(Input.destroy, KeyCode.d);
 
   ui.keyPress.bind(Input.fullscreen, KeyCode.f, alt: true);
 

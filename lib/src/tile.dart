@@ -51,6 +51,13 @@ class Tile {
   /// [_unitDemandGradient].
   final Map<Army, int> _unitDemand = Map<Army, int>();
 
+  /// Measures how correct it is for units of an [Army] to be at this tile.
+  /// This changes when an army changes position, or changes [RangeMode].
+  final Map<Army, int> _unitSafeDeployment = Map<Army, int>();
+
+  /// Same as [_unitDemandGradient] but for [_unitSafeDeployment].
+  final Map<Army, double> _unitSafeDeploymentGradient = Map<Army, double>();
+
   /// Propagated need. When tile A has higher [_unitDemandGradient] than tile B,
   /// then units should move from B to A.
   ///
@@ -62,12 +69,6 @@ class Tile {
   /// This way, tiles that are in trouble pump this information into the
   /// gradient.
   final Map<Army, double> _unitDemandGradient = Map<Army, double>();
-
-  /// How far from the nearest city this tile is.
-  ///
-  /// The higher the number, the harder it is to get material to this tile.
-  /// TODO: either use or remove
-  double goodLogisticsGradient = 0;
 
   /// The number of units per each army on this tile.
   ///
@@ -133,6 +134,13 @@ class Tile {
   void clearDemand(Army army) {
     _unitDemand[army] = 0;
     _unitDemandGradient[army] = 0;
+    _unitSafeDeployment[army] = 0;
+    _unitSafeDeploymentGradient[army] = 0;
+  }
+
+  /// Just show the gradient of the evil army.
+  double getDebugArmyDemandGradient(Army army) {
+    return _unitSafeDeploymentGradient[army] ?? 0;
   }
 
   /// Returns `true` if this tile is already occupied by an opposing faction
@@ -235,6 +243,12 @@ class Tile {
 
     _units[army] ??= 0;
 
+    // Withdraw when appropriate.
+    if (_units[army] > 0 && !army.canExpandTo(hood.center)) {
+      _updateUnitsByMovingWithSafeDeploymentGradient(hood, army);
+      return;
+    }
+
     // Attack or move.
     if (_units[army] > 0) {
       final didAttack = _updateUnitsByTryingAttack(hood, army, pubSub);
@@ -289,6 +303,40 @@ class Tile {
     _updateGoodOrEvil(false, withdrawals);
   }
 
+  void updateUnitSafeDeployment(Neighborhood hood, Army army) {
+    if (!army.canExpandTo(this)) {
+      _unitSafeDeployment[army] = 0;
+    } else {
+      _unitSafeDeployment[army] = 10;
+    }
+
+    if (isEnemyFactionOccupied(army)) {
+      _unitSafeDeployment[army] -= 1;
+    }
+  }
+
+  void updateUnitSafeDeploymentGradient(Neighborhood hood, Army army) {
+    _unitSafeDeploymentGradient[army] ??= 0;
+
+    // Decay the gradient over time. (This tends to zero.)
+    const timeDecay = 0.2;
+    _unitSafeDeploymentGradient[army] *= timeDecay;
+
+    final landNeighbors =
+        hood.neighbors.where((t) => !t.isOcean).toList(growable: false);
+    if (landNeighbors.length > 0) {
+      final maxNeedGradient = landNeighbors.fold<double>(
+          0,
+          (prev, tile) => max(prev,
+              tile._unitSafeDeploymentGradient.putIfAbsent(army, () => 0)));
+      const spaceDecay = 0.8;
+      _unitSafeDeploymentGradient[army] += maxNeedGradient * spaceDecay;
+    }
+
+    // Re-pump local need into the gradient.
+    _unitSafeDeploymentGradient[army] += _unitSafeDeployment[army];
+  }
+
   int _getUnitSurplus(Army army) {
     final demand = _unitDemand[army] ?? 0;
     final actual = army.isEvil ? _evil : _good;
@@ -327,12 +375,12 @@ class Tile {
 
   /// Move with the need gradient, between non-enemy tiles.
   void _updateUnitsByMovingWithNeedGradient(Neighborhood hood, Army army) {
+    assert(army.canExpandTo(hood.center));
     final neediestTile = hood.neighbors.fold<Tile>(null, (prev, tile) {
       if (tile.isOcean) return prev;
       if (tile.isEnemyFactionOccupied(army)) return prev;
-      if (!army.canExpandTo(tile) && army.canExpandTo(hood.center)) {
+      if (!army.canExpandTo(tile)) {
         // No movement beyond max deployment range.
-        // But okay if the current tile is already beyond max deployment range.
         return prev;
       }
       if (prev == null) return tile;
@@ -352,11 +400,45 @@ class Tile {
         // Move everything if there are no more armies in the closest city.
         contingent = _units[army];
       }
+      if (!army.canExpandTo(hood.center)) {
+        // Move everything if the unit is out of army range.
+        contingent = _units[army];
+      }
 
       // Add units to the other tile.
       neediestTile._units[army] =
           neediestTile._units.putIfAbsent(army, () => 0) + contingent;
       neediestTile._updateGoodOrEvil(army.isEvil, contingent);
+
+      // Remove units from here.
+      _units[army] -= contingent;
+      _updateGoodOrEvil(army.isEvil, -contingent);
+    }
+  }
+
+  void _updateUnitsByMovingWithSafeDeploymentGradient(
+      Neighborhood hood, Army army) {
+    final safestTile = hood.neighbors.fold<Tile>(null, (prev, tile) {
+      if (tile.isOcean) return prev;
+      if (tile.isEnemyFactionOccupied(army)) return prev;
+      if (prev == null) return tile;
+      prev._unitSafeDeploymentGradient[army] ??= 0;
+      tile._unitSafeDeploymentGradient[army] ??= 0;
+      if (tile._unitSafeDeploymentGradient[army] >
+          prev._unitSafeDeploymentGradient[army]) return tile;
+      return prev;
+    });
+
+    _unitSafeDeploymentGradient[army] ??= 0;
+    if (safestTile != null &&
+        safestTile._unitSafeDeploymentGradient[army] >
+            _unitSafeDeploymentGradient[army]) {
+      int contingent = _units[army];
+
+      // Add units to the other tile.
+      safestTile._units[army] =
+          safestTile._units.putIfAbsent(army, () => 0) + contingent;
+      safestTile._updateGoodOrEvil(army.isEvil, contingent);
 
       // Remove units from here.
       _units[army] -= contingent;
