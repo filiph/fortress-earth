@@ -54,7 +54,7 @@ class Simulation {
   }
 
   void update() {
-    world.update(armies.armies, pubSub);
+    world.update(armies, pubSub);
     armies.update(world);
   }
 

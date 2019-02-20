@@ -69,7 +69,7 @@ class World {
     }
   }
 
-  void update(Iterable<Army> armies, PubSub pubSub) {
+  void update(Armies armies, PubSub pubSub) {
     for (int i = 0; i < 100; i++) {
       final x = _random.nextInt(mapWidth);
       final y = _random.nextInt(mapHeight);
@@ -77,9 +77,9 @@ class World {
       final current = _tiles[vec];
       if (current.isOcean) continue;
       final hood = _getNeighborhoodOf(current);
-      for (final army in armies) {
+      for (final army in armies.armies) {
         current.updateUnits(hood, army, currentTime, pubSub);
-        current.updateUnitDemand(hood, army);
+        current.updateUnitDemand(hood, army, armies);
         current.updateUnitDemandGradient(hood, army);
         current.updateUnitSafeDeployment(hood, army);
         current.updateUnitSafeDeploymentGradient(hood, army);

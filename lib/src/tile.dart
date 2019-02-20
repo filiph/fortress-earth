@@ -159,7 +159,7 @@ class Tile {
       'ocean=$isOcean'
       '>';
 
-  void updateUnitDemand(Neighborhood hood, Army army) {
+  void updateUnitDemand(Neighborhood hood, Army army, Armies allArmies) {
     // When withdrawing, nothing else matters.
     if (!army.isEvil &&
         (hood.closestCity?.isInCompleteWithdrawal(army) ?? false)) {
@@ -183,6 +183,13 @@ class Tile {
       if (hood.nonNeutralNeighbors.length > neutralNeighbors) {
         unitDemand += 5;
       }
+    }
+
+    // Increase demand when there are enemy armies here (e.g. evil core).
+    final bool enemyArmiesOnThisTile = allArmies.armies
+        .any((other) => other.isEvil != army.isEvil && other.pos == pos);
+    if (enemyArmiesOnThisTile) {
+      unitDemand += 50;
     }
 
     // Try to match the opposing force.
