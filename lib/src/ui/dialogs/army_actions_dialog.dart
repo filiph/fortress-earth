@@ -15,7 +15,7 @@ class ArmyActionsDialog extends Screen<Input> {
 
   // TODO: allow selecting more armies - List<Army>
   //       need a way to notify GameScreen that more armies were added
-  final Army army;
+  final PlayerArmy army;
 
   Input _selectedInput;
 

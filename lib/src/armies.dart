@@ -7,7 +7,8 @@ import 'package:meta/meta.dart';
 import 'package:piecemeal/piecemeal.dart';
 
 class Armies {
-  static final _defaultPlayerArmies = Map<int, PlayerArmy>.unmodifiable({
+  static final _defaultPlayerArmies =
+      Map<int, PlayerArmy>.unmodifiable(<int, PlayerArmy>{
     KeyCode.one: PlayerArmy(KeyCode.one, "Marines", Color.lightGreen,
         initialDestination: Vec(92, 18)),
     KeyCode.two: PlayerArmy(KeyCode.two, "Marines", Color.lightGreen,
@@ -89,7 +90,7 @@ abstract class Army {
   final ticksPerMove = 10;
 
   Army._(this.name, this.color, this.isEvil,
-      {@required initialPosition, Vec initialDestination})
+      {@required Vec initialPosition, Vec initialDestination})
       : assert(initialPosition != null),
         _pos = initialPosition {
     _destination = initialDestination ?? _pos;

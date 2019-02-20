@@ -100,10 +100,10 @@ class Tile {
 
   Color get foregroundColor {
     if (isGood) {
-      final value = 150 + (good * 10).clamp(0, 100);
+      final value = 150 + (good * 10).clamp(0, 100).toInt();
       return Color(value, value, value);
     } else if (isEvil) {
-      final value = 150 + (evil * 10).clamp(0, 100);
+      final value = 150 + (evil * 10).clamp(0, 100).toInt();
       return Color(value, value ~/ 2, value ~/ 2);
     } else {
       if (!(isNeutral || isOcean)) print(this);
@@ -278,12 +278,14 @@ class Tile {
       return;
     }
 
+    assert(army is PlayerArmy);
+
     // Bail out if there's no closest city. In that case, nothing to do for
     // good units.
     if (closestCity == null) return;
 
     // Try invasion.
-    final didInvade = _updateUnitsByTryingInvasion(army, pubSub);
+    final didInvade = _updateUnitsByTryingInvasion(army as PlayerArmy, pubSub);
 
     // Once we invaded, don't do another update.
     if (didInvade) return;
@@ -293,7 +295,8 @@ class Tile {
     if (isEnemyFactionOccupied(army)) return;
 
     // Now ask for reinforcements.
-    final reinforcements = closestCity.requestUnits(army, this, hood);
+    final reinforcements =
+        closestCity.requestUnits(army as PlayerArmy, this, hood);
     _units[army] += reinforcements;
     _updateGoodOrEvil(false, reinforcements);
 

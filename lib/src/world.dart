@@ -12,7 +12,7 @@ import 'package:piecemeal/piecemeal.dart';
 final _random = Random();
 
 class World {
-  static final defaultCities = [
+  static final List<City> defaultCities = [
     // From: http://www.freeworldmaps.net/cities/top50/top50-cities-world.png
     City("Los Angeles", Vec(22, 15)),
     City("New York", Vec(39, 13)),
@@ -41,7 +41,8 @@ class World {
   World(this.mapWidth, this.mapHeight, Tile Function(Vec) generator,
       {Iterable<City> cities}) {
     _currentTime = beginningOfPlay;
-    _cities = Map.fromIterable(cities ?? defaultCities, key: (c) => c.pos);
+    _cities = Map.fromIterable(cities ?? defaultCities,
+        key: (dynamic c) => (c as City).pos);
     assert(() {
       final keyCodes = Set<int>();
       for (final city in _cities.values) {

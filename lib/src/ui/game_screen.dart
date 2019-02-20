@@ -61,7 +61,7 @@ class GameScreen extends Screen<Input> {
       result.army.setRangeMode(result.rangeMode);
       sim.world.clearDemand(result.army);
     } else {
-      throw UnimplementedError(result);
+      throw UnimplementedError('$result');
     }
   }
 

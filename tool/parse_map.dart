@@ -41,10 +41,10 @@ void main(List<String> args) {
   }
 
   final imagePath = results.rest.single;
-  final width = int.parse(results['width']);
-  final height = int.parse(results['height']);
-  final bottomTrim = int.parse(results['bottom-trim']) / 100;
-  final waterMapPath = (results['water-map']);
+  final width = int.parse(results['width'] as String);
+  final height = int.parse(results['height'] as String);
+  final bottomTrim = int.parse(results['bottom-trim'] as String) / 100;
+  final waterMapPath = (results['water-map'] as String);
 
   final file = File(imagePath);
   final image = decodeNamedImage(file.readAsBytesSync(), imagePath);
