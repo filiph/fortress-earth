@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:fortress_earth/src/ui/panels/panel.dart';
 import 'package:fortress_earth/src/ui/theme.dart';
 import 'package:fortress_earth/src/armies.dart';
@@ -6,7 +8,9 @@ import 'package:malison/malison.dart';
 class UnitPanel extends Panel {
   Armies armies;
 
-  UnitPanel(int x, int y, int width, int height, this.armies)
+  UnmodifiableListView selected;
+
+  UnitPanel(int x, int y, int width, int height, this.armies, this.selected)
       : super(x, y, width, height);
 
   @override
@@ -32,6 +36,8 @@ class UnitPanel extends Panel {
         army.isAlive ? "OK" : "DEAD",
         army.isAlive ? TextTheme.ok : TextTheme.highlight,
       );
+
+      terminal.writeAt(28, y, selected.contains(army) ? '--' : '');
 
       y++;
     }

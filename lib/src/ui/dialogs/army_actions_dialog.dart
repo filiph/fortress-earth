@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:fortress_earth/src/armies.dart';
 import 'package:fortress_earth/src/city.dart';
 import 'package:fortress_earth/src/shared_state.dart';
@@ -13,9 +15,13 @@ import 'package:malison/malison_web.dart';
 class ArmyActionsDialog extends Screen<Input> {
   final World world;
 
-  // TODO: allow selecting more armies - List<Army>
-  //       need a way to notify GameScreen that more armies were added
-  final PlayerArmy army;
+  final UnmodifiableListView<PlayerArmy> armies;
+
+  /// A callback function for unhandled keys that the underlying game screen
+  /// should handle.
+  ///
+  /// Returns true if an army was 'caught' by the keyCode.
+  final bool Function(int) onKeyCallback;
 
   Input _selectedInput;
 
@@ -25,12 +31,9 @@ class ArmyActionsDialog extends Screen<Input> {
 
   final UISharedState state;
 
-  CommandsPanel commandsPanel;
-
-  ArmyActionsDialog(
-      this._screenX, this._screenY, this.world, this.army, this.state) {
-    commandsPanel = CommandsPanel(_screenX, _screenY, 47, 5, army.name,
-        ["Go", "Tight", "Expanded", "Destroy"]);
+  ArmyActionsDialog(this._screenX, this._screenY, this.world, this.armies,
+      this.state, this.onKeyCallback) {
+    _commandsPanel = _buildCommandsPanel();
   }
 
   bool get isTransparent => true;
@@ -41,7 +44,7 @@ class ArmyActionsDialog extends Screen<Input> {
     assert(popped is WhereDialog);
     assert(_selectedInput == Input.go);
 
-    ui.pop(GoDialogResult(army, result as City));
+    ui.pop(GoDialogResult(armies, result as City));
   }
 
   bool handleInput(Input input) {
@@ -56,15 +59,15 @@ class ArmyActionsDialog extends Screen<Input> {
         break;
 
       case Input.tight:
-        ui.pop(ModeDialogResult(army, RangeMode.tight));
+        ui.pop(ModeDialogResult(armies, RangeMode.tight));
         break;
 
       case Input.expanded:
-        ui.pop(ModeDialogResult(army, RangeMode.expanded));
+        ui.pop(ModeDialogResult(armies, RangeMode.expanded));
         break;
 
       case Input.destroy:
-        ui.pop(ModeDialogResult(army, RangeMode.seekAndDestroy));
+        ui.pop(ModeDialogResult(armies, RangeMode.seekAndDestroy));
         break;
 
       default:
@@ -74,25 +77,48 @@ class ArmyActionsDialog extends Screen<Input> {
     return true;
   }
 
+  bool keyDown(int keyCode, {bool shift, bool alt}) {
+    if (shift || alt) return false;
+    print(keyCode);
+    var isChanged = onKeyCallback(keyCode);
+    if (isChanged) {
+      print('armies changed to $armies');
+      _commandsPanel = _buildCommandsPanel();
+      dirty();
+    }
+    return isChanged;
+  }
+
+  CommandsPanel _commandsPanel;
+
   void render(Terminal terminal) {
     terminal.rect(_screenX, _screenY, 47, 6).clear();
 
-    commandsPanel.borderColor =
+    _commandsPanel.borderColor =
         _selectedInput == null ? TextTheme.important : Panel.defaultBorderColor;
-    commandsPanel.render(terminal);
+    _commandsPanel.render(terminal);
   }
+
+  CommandsPanel _buildCommandsPanel() => CommandsPanel(
+        _screenX,
+        _screenY,
+        47,
+        5,
+        armies.map((a) => a.name).join(', '),
+        ["Go", "Tight", "Expanded", "Destroy"],
+      );
 }
 
 class GoDialogResult {
-  final PlayerArmy army;
+  final List<PlayerArmy> armies;
   final City destination;
 
-  const GoDialogResult(this.army, this.destination);
+  const GoDialogResult(this.armies, this.destination);
 }
 
 class ModeDialogResult {
-  final PlayerArmy army;
+  final List<PlayerArmy> armies;
   final RangeMode rangeMode;
 
-  const ModeDialogResult(this.army, this.rangeMode);
+  const ModeDialogResult(this.armies, this.rangeMode);
 }

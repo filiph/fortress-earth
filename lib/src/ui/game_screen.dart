@@ -1,5 +1,7 @@
+import 'dart:collection';
 import 'dart:math';
 
+import 'package:fortress_earth/src/armies.dart';
 import 'package:fortress_earth/src/constants.dart';
 import 'package:fortress_earth/src/shared_state.dart';
 import 'package:fortress_earth/src/simulation.dart';
@@ -25,7 +27,7 @@ class GameScreen extends Screen<Input> {
 
   double _gradientHighClamp = 1;
 
-  final UnitPanel _unitPanel;
+  UnitPanel _unitPanel;
 
   final ChatPanel _chatPanel = ChatPanel(
       mapOffsetLeft,
@@ -45,21 +47,28 @@ class GameScreen extends Screen<Input> {
 
   GameScreen(this.sim, this.state, {this.fullscreenCallback})
       : _citiesPanel = CitiesPanel(mapOffsetLeft + mapWidth - 30,
-            mapOffsetTop + mapHeight - 4, 30, 16, sim.world.cities, state),
-        _unitPanel = UnitPanel(mapOffsetLeft + 50, mapOffsetTop + mapHeight - 2,
-            47, 14, sim.armies);
+            mapOffsetTop + mapHeight - 4, 30, 16, sim.world.cities, state) {
+    _unitPanel = UnitPanel(mapOffsetLeft + 50, mapOffsetTop + mapHeight - 2, 47,
+        14, sim.armies, UnmodifiableListView<PlayerArmy>(_selectedArmies));
+  }
 
   void activate(Screen<Input> popped, Object result) {
     if (result == null) return;
     assert(popped is ArmyActionsDialog);
 
     if (result is GoDialogResult) {
-      result.army.setDestination(result.destination.pos);
-      sim.world.clearDemand(result.army);
+      for (final army in result.armies) {
+        army.setDestination(result.destination.pos);
+        sim.world.clearDemand(army);
+      }
+      _selectedArmies.clear();
     } else if (result is ModeDialogResult) {
-      print("changed mode of ${result.army} to ${result.rangeMode}");
-      result.army.setRangeMode(result.rangeMode);
-      sim.world.clearDemand(result.army);
+      print("changed mode of ${result.armies} to ${result.rangeMode}");
+      for (final army in result.armies) {
+        army.setRangeMode(result.rangeMode);
+        sim.world.clearDemand(army);
+      }
+      _selectedArmies.clear();
     } else {
       throw UnimplementedError('$result');
     }
@@ -94,13 +103,39 @@ class GameScreen extends Screen<Input> {
     return true;
   }
 
+  PlayerArmy _getArmyFromKeyCode(int keyCode) {
+    return sim.armies.playerArmies[keyCode];
+  }
+
+  final List<PlayerArmy> _selectedArmies = [];
+
   bool keyDown(int keyCode, {bool shift, bool alt}) {
-    for (final key in sim.armies.playerArmies.keys) {
-      if (key == keyCode) {
-        ui.push(ArmyActionsDialog(50, mapOffsetTop + mapHeight - 6, sim.world,
-            sim.armies.playerArmies[key], state));
-        return true;
-      }
+    var army = _getArmyFromKeyCode(keyCode);
+    if (army != null) {
+      assert(_selectedArmies.isEmpty);
+      _selectedArmies.add(army);
+      ui.push(ArmyActionsDialog(
+        50,
+        mapOffsetTop + mapHeight - 6,
+        sim.world,
+        // The initial list of armies starts with one.
+        UnmodifiableListView(_selectedArmies),
+        state,
+        (additionalKeyCode) {
+          var additional = _getArmyFromKeyCode(additionalKeyCode);
+          print('adding $additional');
+          if (additional == null) {
+            return false;
+          }
+          if (_selectedArmies.contains(additional)) {
+            _selectedArmies.remove(additional);
+          } else {
+            _selectedArmies.add(additional);
+          }
+          return true;
+        },
+      ));
+      return true;
     }
 
     print("unhandled keyDown: $keyCode (${String.fromCharCode(keyCode)})");
@@ -177,7 +212,7 @@ class GameScreen extends Screen<Input> {
           army.keyCode, Color.black, army.color);
     }
 
-    // Unit table / panel.
+    // Army table / panel.
     _unitPanel.render(terminal);
 
     // Chat panel.
