@@ -228,6 +228,7 @@ class PlayerArmy extends Army {
     _latestCity = _deployedAt;
     if (_deployedAt != null) {
       _deployedAt.release(this);
+      _deployedAt = null;
     }
     super.setDestination(vec);
   }
