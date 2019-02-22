@@ -20,14 +20,20 @@ class UnitPanel extends Panel {
     var y = 2;
     for (final key in armies.playerArmies.keys) {
       final army = armies.playerArmies[key];
-      terminal.drawChar(0, y, key, army.color);
-      terminal.writeAt(2, y, army.name);
+      var isSelected = selected.contains(army);
+      var background = isSelected ? TextTheme.background : Color.black;
+
+      terminal.writeAt(0, y, ' ' * bounds.width, Color.white, background);
+
+      terminal.drawChar(0, y, key, army.color, background);
+      terminal.writeAt(2, y, army.name, Color.white, background);
 
       terminal.writeAt(
         14,
         y,
         army.hasArrived ? "STNDBY" : "TRANST",
         army.hasArrived ? TextTheme.detail : TextTheme.normal,
+        background,
       );
 
       terminal.writeAt(
@@ -35,9 +41,8 @@ class UnitPanel extends Panel {
         y,
         army.isAlive ? "OK" : "DEAD",
         army.isAlive ? TextTheme.ok : TextTheme.highlight,
+        background,
       );
-
-      terminal.writeAt(28, y, selected.contains(army) ? '--' : '');
 
       y++;
     }

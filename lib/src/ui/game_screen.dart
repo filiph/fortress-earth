@@ -53,7 +53,10 @@ class GameScreen extends Screen<Input> {
   }
 
   void activate(Screen<Input> popped, Object result) {
-    if (result == null) return;
+    if (result == null) {
+      _selectedArmies.clear();
+      return;
+    }
     assert(popped is ArmyActionsDialog);
 
     if (result is GoDialogResult) {
@@ -123,7 +126,6 @@ class GameScreen extends Screen<Input> {
         state,
         (additionalKeyCode) {
           var additional = _getArmyFromKeyCode(additionalKeyCode);
-          print('adding $additional');
           if (additional == null) {
             return false;
           }

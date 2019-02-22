@@ -79,10 +79,8 @@ class ArmyActionsDialog extends Screen<Input> {
 
   bool keyDown(int keyCode, {bool shift, bool alt}) {
     if (shift || alt) return false;
-    print(keyCode);
     var isChanged = onKeyCallback(keyCode);
     if (isChanged) {
-      print('armies changed to $armies');
       _commandsPanel = _buildCommandsPanel();
       dirty();
     }
@@ -104,7 +102,7 @@ class ArmyActionsDialog extends Screen<Input> {
         _screenY,
         47,
         5,
-        armies.map((a) => a.name).join(', '),
+        armies.map((a) => String.fromCharCode(a.keyCode)).join(', '),
         ["Go", "Tight", "Expanded", "Destroy"],
       );
 }
