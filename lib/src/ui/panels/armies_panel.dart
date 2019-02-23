@@ -52,6 +52,14 @@ class UnitPanel extends Panel {
         background,
       );
 
+      terminal.writeAt(
+        35,
+        y,
+        army.deadUnits.toString().padLeft(4),
+        TextTheme.highlight,
+        background,
+      );
+
       y++;
     }
   }

@@ -234,7 +234,7 @@ class Tile {
     if (isOcean) return;
 
     if (pos.x == 39 && pos.y == 13) {
-      print("NYC!");
+      // print("NYC!");
     }
 
     _units[army] ??= 0;
@@ -242,14 +242,18 @@ class Tile {
     // Die if army is dead.
     if (!army.isAlive && _units[army] > 0) {
       final dieCount = max(_units[army] ~/ 2, 1);
+      assert(
+          dieCount <= _units[army],
+          "Tried to remove more units ($dieCount) "
+          "then there are (${_units[army]}) of $army");
       _units[army] -= dieCount;
-      army.deadUnits += dieCount;
+      army.bury(dieCount);
       _updateGoodOrEvil(army.isEvil, -dieCount);
     }
 
     if (_units[army] > 0) {
       // Withdraw when appropriate.
-      if (!army.canExpandTo(hood.center)) {
+      if (!army.canExpandTo(hood.center) || !army.hasArrived) {
         _updateUnitsByMovingWithSafeDeploymentGradient(hood, army);
       } else {
         // Attack or move.
@@ -267,6 +271,7 @@ class Tile {
         const coreSpawn = 50;
         _units[army] += coreSpawn;
         army.maxStrength += coreSpawn;
+        army.field(coreSpawn);
         _updateGoodOrEvil(true, coreSpawn);
       }
       return;
@@ -349,7 +354,7 @@ class Tile {
   int _computeAndSubtractGiven(Army army, int requested) {
     final willingToGive = min(army.availableStrength, army.maxUnitsPerRequest);
     final given = min(willingToGive.round(), requested);
-    army.fieldedUnits += given;
+    army.field(given);
     return given;
   }
 
@@ -370,8 +375,7 @@ class Tile {
     if (army.deployedAt == city) return 0;
 
     final takenBack = min(offeredUnits, army.fieldedUnits);
-    army.fieldedUnits -= takenBack;
-    print('$army is taking back $takenBack in $city');
+    army.withdraw(takenBack);
     return takenBack;
   }
 
@@ -410,8 +414,7 @@ class Tile {
       if (n == 0) return 0;
       assert(a.isEvil != army.isEvil,
           "There was a friendly unit in attacked tile $this");
-      a.deadUnits += n;
-      // TODO: report loss of units to pubSub
+      a.bury(n);
       return 0;
     });
     _good = 0;

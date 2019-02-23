@@ -75,11 +75,29 @@ abstract class Army {
   int maxStrength = 500;
 
   /// Number of units that are out there.
-  int fieldedUnits = 0;
+  int get fieldedUnits => _fieldedUnits;
 
-  /// The number of units that have died and aren't replaced yet
-  /// by new recruits.
-  int deadUnits = 0;
+  int _fieldedUnits = 0;
+
+  void field(int count) {
+    assert(
+        count <= availableStrength,
+        "$this is trying to field $count units "
+        "although only $availableStrength is available");
+
+    _fieldedUnits += count;
+  }
+
+  void withdraw(int count) {
+    assert(
+        count <= _fieldedUnits,
+        "$this is trying to withdraw $count units "
+        "although only $_fieldedUnits was fielded");
+
+    _fieldedUnits -= count;
+  }
+
+  int _deadUnits = 0;
 
   bool isAlive = true;
 
@@ -105,9 +123,16 @@ abstract class Army {
   }
 
   int get availableStrength {
-    assert(maxStrength >= fieldedUnits + deadUnits);
-    return maxStrength - fieldedUnits;
+    assert(
+        maxStrength >= fieldedUnits + deadUnits,
+        "There are more fielded ($fieldedUnits) and dead ($deadUnits) "
+        "than the max strength ($maxStrength) of $this");
+    return maxStrength - fieldedUnits - deadUnits;
   }
+
+  /// The number of units that have died and aren't replaced yet
+  /// by new recruits.
+  int get deadUnits => _deadUnits;
 
   bool get hasArrived => _destination == _pos;
 
@@ -127,6 +152,21 @@ abstract class Army {
   /// without the need to compute the square root.
   double get _maxDeploymentRangeSquared =>
       maxDeploymentRange * maxDeploymentRange;
+
+  /// Marks [count] units as dead.
+  void bury(int count) {
+    assert(
+        count <= fieldedUnits ||
+            // TODO: remove this and instead make sure the math is okay even
+            //       for dying armies
+            !isAlive,
+        "Unfielded units cannot die: "
+        "$this was trying to bury $count units out of $fieldedUnits. "
+        "The max strength was $maxStrength and there are $deadUnits dead.");
+    _deadUnits += count;
+    _fieldedUnits -= count;
+    // TODO: report loss of units to pubSub
+  }
 
   /// Returns `true` if [tile] is in [maxDeploymentRange] and army is
   /// in expansion mode.
