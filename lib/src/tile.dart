@@ -160,17 +160,6 @@ class Tile {
       '>';
 
   void updateUnitDemand(Neighborhood hood, Army army, Armies allArmies) {
-    // When withdrawing, nothing else matters.
-    if (!army.isEvil &&
-        (hood.closestCity?.isInCompleteWithdrawal(army) ?? false)) {
-      if (hood.closestCity.pos == pos) {
-        _unitDemand[army] = hood.closestCity.getUnitDeficit(army);
-      } else {
-        _unitDemand[army] = 0;
-      }
-      return;
-    }
-
     int unitDemand = 0;
 
     // First, compute need of this particular square.
@@ -208,11 +197,7 @@ class Tile {
     unitDemand += (threat * hoodCoefficient).floor();
 
     if (hood.closestCity != null && hood.closestCity.pos == pos) {
-      if (!army.isEvil) {
-        // We're at the city tile with a good unit. We might need lots of units
-        // if there's unit deficit (e.g. an army just left the city).
-        unitDemand += hood.closestCity.getUnitDeficit(army);
-      } else {
+      if (army.isEvil) {
         // Evil units love cities.
         unitDemand += 100;
       }
@@ -248,28 +233,31 @@ class Tile {
     // Short-circuit ocean tiles: they can't update.
     if (isOcean) return;
 
+    if (pos.x == 39 && pos.y == 13) {
+      print("NYC!");
+    }
+
     _units[army] ??= 0;
-
-    // Withdraw when appropriate.
-    if (_units[army] > 0 && !army.canExpandTo(hood.center)) {
-      _updateUnitsByMovingWithSafeDeploymentGradient(hood, army);
-      return;
-    }
-
-    // Attack or move.
-    if (_units[army] > 0) {
-      final didAttack = _updateUnitsByTryingAttack(hood, army, pubSub);
-      if (!didAttack) {
-        _updateUnitsByMovingWithNeedGradient(hood, army);
-      }
-    }
 
     // Die if army is dead.
     if (!army.isAlive && _units[army] > 0) {
       final dieCount = max(_units[army] ~/ 2, 1);
       _units[army] -= dieCount;
-      army.strength -= dieCount;
+      army.deadUnits += dieCount;
       _updateGoodOrEvil(army.isEvil, -dieCount);
+    }
+
+    if (_units[army] > 0) {
+      // Withdraw when appropriate.
+      if (!army.canExpandTo(hood.center)) {
+        _updateUnitsByMovingWithSafeDeploymentGradient(hood, army);
+      } else {
+        // Attack or move.
+        final didAttack = _updateUnitsByTryingAttack(hood, army, pubSub);
+        if (!didAttack) {
+          _updateUnitsByMovingWithNeedGradient(hood, army);
+        }
+      }
     }
 
     // Spawn new units.
@@ -278,39 +266,41 @@ class Tile {
           (army as EvilArmy).isGeneratingUnits(currentTime)) {
         const coreSpawn = 50;
         _units[army] += coreSpawn;
-        // TODO: update army strength via pubSub, not directly
-        army.strength += coreSpawn;
+        army.maxStrength += coreSpawn;
         _updateGoodOrEvil(true, coreSpawn);
       }
       return;
     }
 
     assert(army is PlayerArmy);
+    final playerArmy = army as PlayerArmy;
 
     // Bail out if there's no closest city. In that case, nothing to do for
     // good units.
     if (closestCity == null) return;
 
     // Try invasion.
-    final didInvade = _updateUnitsByTryingInvasion(army as PlayerArmy, pubSub);
+    final didInvade = _updateUnitsByTryingInvasion(playerArmy, pubSub);
 
     // Once we invaded, don't do another update.
     if (didInvade) return;
 
     // The following logic doesn't make sense for tiles that are owned
     // by enemy faction.
-    if (isEnemyFactionOccupied(army)) return;
+    if (isEnemyFactionOccupied(playerArmy)) return;
 
     // Now ask for reinforcements.
-    final reinforcements =
-        closestCity.requestUnits(army as PlayerArmy, this, hood);
-    _units[army] += reinforcements;
+    final reinforcements = _requestUnits(playerArmy, closestCity, hood);
+    _units[playerArmy] += reinforcements;
     _updateGoodOrEvil(false, reinforcements);
 
     // Or offer good units back if we're at the place.
-    final withdrawals = closestCity.offerUnits(army, this, _units[army]);
-    _units[army] -= withdrawals;
-    _updateGoodOrEvil(false, withdrawals);
+    if (_units[playerArmy] > 0) {
+      final withdrawals =
+          _offerUnits(playerArmy, closestCity, _units[playerArmy]);
+      _units[playerArmy] -= withdrawals;
+      _updateGoodOrEvil(false, withdrawals);
+    }
   }
 
   void updateUnitSafeDeployment(Neighborhood hood, Army army) {
@@ -322,6 +312,14 @@ class Tile {
 
     if (isEnemyFactionOccupied(army)) {
       _unitSafeDeployment[army] -= 1;
+    }
+
+    if (!army.isEvil &&
+        (hood.closestCity?.isInCompleteWithdrawal(army) ?? false)) {
+      if (hood.closestCity.pos == pos) {
+        _unitSafeDeployment[army] += 10;
+      }
+      return;
     }
   }
 
@@ -347,10 +345,54 @@ class Tile {
     _unitSafeDeploymentGradient[army] += _unitSafeDeployment[army];
   }
 
+  /// TODO: move to army
+  int _computeAndSubtractGiven(Army army, int requested) {
+    final willingToGive = min(army.availableStrength, army.maxUnitsPerRequest);
+    final given = min(willingToGive.round(), requested);
+    army.fieldedUnits += given;
+    return given;
+  }
+
   int _getUnitSurplus(Army army) {
     final demand = _unitDemand[army] ?? 0;
     final actual = army.isEvil ? _evil : _good;
     return actual - demand;
+  }
+
+  /// Offer at most [offeredUnits] units to an army in [city].
+  ///
+  /// This method will return the number of [Tile.good] that it will take.
+  /// This method is _not_ responsible for subtracting it.
+  int _offerUnits(PlayerArmy army, City city, int offeredUnits) {
+    // Only city tiles can take back units.
+    if (city.pos != pos) return 0;
+
+    if (army.deployedAt == city) return 0;
+
+    final takenBack = min(offeredUnits, army.fieldedUnits);
+    army.fieldedUnits -= takenBack;
+    print('$army is taking back $takenBack in $city');
+    return takenBack;
+  }
+
+  /// Claims units that then cannot be available elsewhere.
+  int _requestUnits(PlayerArmy army, City city, Neighborhood hood) {
+    // Evil tiles cannot request units.
+    if (isEvil) return 0;
+
+    // Armies in flight cannot offer units.
+    if (!army.hasArrived) return 0;
+
+    // Tiles around cities can get units if available.
+    if (army.canDisembarkTo(hood.pos)) {
+      final request = hood.evil.ceil() + 10;
+      final distance = (hood.pos - pos).length;
+      final distanceModifiedRequest = request / (1 + distance);
+      return _computeAndSubtractGiven(army, distanceModifiedRequest.round());
+    }
+
+    // By default, we don't give any units.
+    return 0;
   }
 
   /// Updates [_evil] or [_good], according to [isEvil].
@@ -368,8 +410,8 @@ class Tile {
       if (n == 0) return 0;
       assert(a.isEvil != army.isEvil,
           "There was a friendly unit in attacked tile $this");
-      a.strength -= n;
-      // TODO: report loss of units to pubSub (and update Army.strength somewhere else)
+      a.deadUnits += n;
+      // TODO: report loss of units to pubSub
       return 0;
     });
     _good = 0;
@@ -405,11 +447,6 @@ class Tile {
     if (neediestTile != null &&
         neediestTile._unitDemandGradient[army] > _unitDemandGradient[army]) {
       int contingent = _units[army] ~/ 2;
-      if (!army.isEvil &&
-          (hood.closestCity?.isInCompleteWithdrawal(army) ?? false)) {
-        // Move everything if there are no more armies in the closest city.
-        contingent = _units[army];
-      }
       if (!army.canExpandTo(hood.center)) {
         // Move everything if the unit is out of army range.
         contingent = _units[army];
@@ -525,10 +562,9 @@ class Tile {
     if (!isEnemyFactionOccupied(army)) return false;
     if (!army.canDisembarkTo(pos)) return false;
 
-    final available = closestCity.getAvailableUnits(army);
-    if (available == 0) return false;
+    if (army.availableStrength == 0) return false;
 
-    final force = min(army.maxUnitsPerInvasion, available);
+    final force = min(army.maxUnitsPerInvasion, army.availableStrength);
 
     // TODO: allow invasion on stronger tiles, leading to attacker losses
     if (force <= evil) return false;

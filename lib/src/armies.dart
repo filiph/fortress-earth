@@ -71,7 +71,15 @@ class Armies {
 abstract class Army {
   final bool isEvil;
 
-  int strength = 500;
+  /// The max number of units. Also the initial number of available units.
+  int maxStrength = 500;
+
+  /// Number of units that are out there.
+  int fieldedUnits = 0;
+
+  /// The number of units that have died and aren't replaced yet
+  /// by new recruits.
+  int deadUnits = 0;
 
   bool isAlive = true;
 
@@ -96,15 +104,15 @@ abstract class Army {
     _destination = initialDestination ?? _pos;
   }
 
+  int get availableStrength {
+    assert(maxStrength >= fieldedUnits + deadUnits);
+    return maxStrength - fieldedUnits;
+  }
+
   bool get hasArrived => _destination == _pos;
 
   /// Distance from army [pos] after which units cannot go further.
   double get maxDeploymentRange;
-
-  /// Just [maxDeploymentRange] squared. Useful for distance comparisons
-  /// without the need to compute the square root.
-  double get _maxDeploymentRangeSquared =>
-      maxDeploymentRange * maxDeploymentRange;
 
   /// Max number of units that this army can land with in an enemy-controlled
   /// city.
@@ -114,6 +122,11 @@ abstract class Army {
   int get maxUnitsPerRequest => 10;
 
   Vec get pos => _pos;
+
+  /// Just [maxDeploymentRange] squared. Useful for distance comparisons
+  /// without the need to compute the square root.
+  double get _maxDeploymentRangeSquared =>
+      maxDeploymentRange * maxDeploymentRange;
 
   /// Returns `true` if [tile] is in [maxDeploymentRange] and army is
   /// in expansion mode.
