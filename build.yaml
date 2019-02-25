@@ -1,0 +1,12 @@
+targets:
+  $default:
+    builders:
+      build_web_compilers|entrypoint:
+        # The entrypoints we want to compile.
+        generate_for:
+          - web/**.dart
+        options:
+          compiler: dart2js
+          # The dart2js specific args.
+          dart2js_args:
+            - -O3
