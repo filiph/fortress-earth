@@ -5,6 +5,7 @@ import 'package:fortress_earth/src/armies.dart';
 import 'package:fortress_earth/src/constants.dart';
 import 'package:fortress_earth/src/shared_state.dart';
 import 'package:fortress_earth/src/simulation.dart';
+import 'package:fortress_earth/src/ui/audio.dart';
 import 'package:fortress_earth/src/ui/dialogs/army_actions_dialog.dart';
 import 'package:fortress_earth/src/ui/input.dart';
 import 'package:fortress_earth/src/ui/panels/armies_panel.dart';
@@ -44,6 +45,8 @@ class GameScreen extends Screen<Input> {
   final UISharedState state;
 
   final Simulation sim;
+
+  final List<PlayerArmy> _selectedArmies = [];
 
   GameScreen(this.sim, this.state, {this.fullscreenCallback})
       : _citiesPanel = CitiesPanel(mapOffsetLeft + mapWidth - 30,
@@ -87,6 +90,10 @@ class GameScreen extends Screen<Input> {
         if (fullscreenCallback != null) fullscreenCallback();
         break;
 
+      case Input.sound:
+        switchAudioOnOff();
+        break;
+
       case Input.debugNeedGradient:
         _showNeedGradient = !_showNeedGradient;
         break;
@@ -105,12 +112,6 @@ class GameScreen extends Screen<Input> {
 
     return true;
   }
-
-  PlayerArmy _getArmyFromKeyCode(int keyCode) {
-    return sim.armies.playerArmies[keyCode];
-  }
-
-  final List<PlayerArmy> _selectedArmies = [];
 
   bool keyDown(int keyCode, {bool shift, bool alt}) {
     var army = _getArmyFromKeyCode(keyCode);
@@ -137,6 +138,7 @@ class GameScreen extends Screen<Input> {
           return true;
         },
       ));
+      audioPlayer.bleep();
       return true;
     }
 
@@ -249,6 +251,10 @@ class GameScreen extends Screen<Input> {
     dirty();
 
     _latestUpdateTime = _stopwatch.elapsedMicroseconds;
+  }
+
+  PlayerArmy _getArmyFromKeyCode(int keyCode) {
+    return sim.armies.playerArmies[keyCode];
   }
 
   static double _normalizeValue(double value, double minimum, double maximum) {

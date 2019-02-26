@@ -45,6 +45,7 @@ class Input {
 
   /// Interface inputs.
   static const fullscreen = Input("fullscreen");
+  static const sound = Input("sound");
 
   /// Debug inputs.
   static const debugNeedGradient = Input("debugNeedGradient");

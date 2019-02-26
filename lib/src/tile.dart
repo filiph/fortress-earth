@@ -159,6 +159,7 @@ class Tile {
       'ocean=$isOcean'
       '>';
 
+  /// [allArmies] are needed to target enemy army positions (enemy cores)
   void updateUnitDemand(Neighborhood hood, Army army, Armies allArmies) {
     int unitDemand = 0;
 

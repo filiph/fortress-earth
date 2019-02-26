@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'package:fortress_earth/src/armies.dart';
 import 'package:fortress_earth/src/city.dart';
 import 'package:fortress_earth/src/shared_state.dart';
+import 'package:fortress_earth/src/ui/audio.dart';
 import 'package:fortress_earth/src/ui/dialogs/where_dialog.dart';
 import 'package:fortress_earth/src/ui/input.dart';
 import 'package:fortress_earth/src/ui/panels/commands_panel.dart';
@@ -56,18 +57,22 @@ class ArmyActionsDialog extends Screen<Input> {
       case Input.go:
         _selectedInput = Input.go;
         ui.push(WhereDialog(world.cities.values, state));
+        audioPlayer.bleep();
         break;
 
       case Input.tight:
         ui.pop(ModeDialogResult(armies, RangeMode.tight));
+        audioPlayer.bleep();
         break;
 
       case Input.expanded:
         ui.pop(ModeDialogResult(armies, RangeMode.expanded));
+        audioPlayer.bleep();
         break;
 
       case Input.destroy:
         ui.pop(ModeDialogResult(armies, RangeMode.seekAndDestroy));
+        audioPlayer.bleep();
         break;
 
       default:
@@ -82,6 +87,7 @@ class ArmyActionsDialog extends Screen<Input> {
     var isChanged = onKeyCallback(keyCode);
     if (isChanged) {
       _commandsPanel = _buildCommandsPanel();
+      audioPlayer.bleep();
       dirty();
     }
     return isChanged;
