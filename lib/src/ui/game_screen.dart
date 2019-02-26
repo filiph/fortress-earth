@@ -170,6 +170,7 @@ class GameScreen extends Screen<Input> {
 
         String char;
         Color foregroundColor;
+        Color backgroundColor = tile.backgroundColor;
         if (_showNeedGradient) {
           //double value = tile.debugEvilDemandGradient;
           double value = tile.getDebugArmyDemandGradient(
@@ -181,8 +182,15 @@ class GameScreen extends Screen<Input> {
           int index = (normalized * 10).floor();
           char = const [0, 1, 2, 3, 4, 5, 5, 6, 7, 8, 9][index].toString();
         } else if (sim.world.cities.containsKey(vec)) {
-          char = '■';
-          foregroundColor = tile.isEvil ? Color.red : Color.yellow;
+          if (state.citiesPanelActive) {
+            char = String.fromCharCode(sim.world.cities[vec].keyCode)
+                .toUpperCase();
+            foregroundColor = Color.black;
+            backgroundColor = tile.isEvil ? Color.red : Color.yellow;
+          } else {
+            char = '■';
+            foregroundColor = tile.isEvil ? Color.red : Color.yellow;
+          }
         } else if (tile.isNeutral) {
           char = '░';
         } else {
@@ -197,7 +205,7 @@ class GameScreen extends Screen<Input> {
           screenY,
           char,
           foregroundColor,
-          tile.backgroundColor,
+          backgroundColor,
         );
       }
     }
