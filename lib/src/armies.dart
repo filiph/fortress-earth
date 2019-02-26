@@ -59,11 +59,11 @@ class Armies {
 
   void update(World world) {
     for (final army in playerArmies.values) {
-      army.updatePosition(world);
+      army.updatePosition(world, armies);
     }
 
     for (final evilArmy in evilArmies) {
-      evilArmy.updatePosition(world);
+      evilArmy.updatePosition(world, armies);
     }
   }
 }
@@ -182,7 +182,7 @@ abstract class Army {
   String toString() => "$runtimeType<$name>";
 
   @mustCallSuper
-  void updatePosition(World world) {
+  void updatePosition(World world, Iterable<Army> otherArmies) {
     if (!isAlive) return;
     if (hasArrived) return;
 
@@ -291,17 +291,50 @@ class PlayerArmy extends Army {
   }
 
   @override
-  void updatePosition(World world) {
+  void updatePosition(World world, Iterable<Army> otherArmies) {
     if (hasArrived) return;
 
-    super.updatePosition(world);
+    super.updatePosition(world, otherArmies);
 
     if (hasArrived) {
       final city = world.cities[pos];
       _deployedAt = city;
       _deployedAt.deploy(this);
       _latestCity = city;
+
+      _moveToClosestUnoccupiedTile(
+          world, pos, otherArmies.whereType<PlayerArmy>().toList());
     }
+  }
+
+  void _moveToClosestUnoccupiedTile(
+      World world, Vec start, List<PlayerArmy> otherArmies) {
+    final List<Vec> open = List();
+    final Set<Vec> close = Set();
+    open.addAll(start.neighbors);
+    Vec result;
+
+    while (open.isNotEmpty) {
+      var current = open.removeAt(0);
+      var tile = world.tiles[current];
+      if (tile.isOcean) {
+        close.add(current);
+        open.addAll(current.neighbors.where((vec) => !close.contains(vec)));
+        continue;
+      }
+      if (otherArmies.any((army) => army.pos == current)) {
+        close.add(current);
+        open.addAll(current.neighbors.where((vec) => !close.contains(vec)));
+        continue;
+      }
+      result = current;
+      break;
+    }
+    if (result == null) {
+      throw StateError('Cannot find place for $this to land.');
+    }
+    _destination = result;
+    _pos = result;
   }
 }
 

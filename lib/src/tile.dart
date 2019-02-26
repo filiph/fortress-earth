@@ -562,7 +562,6 @@ class Tile {
 
   /// Try invading the tile from above.
   bool _updateUnitsByTryingInvasion(PlayerArmy army, PubSub pubSub) {
-    if (army.pos != closestCity.pos) return false;
     if (!isEnemyFactionOccupied(army)) return false;
     if (!army.canDisembarkTo(pos)) return false;
 
