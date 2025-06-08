@@ -247,6 +247,7 @@ class PlayerArmy extends Army {
   final int keyCode;
 
   /// The city that this Army was stationed at last.
+  // ignore: unused_field
   City? _latestCity;
 
   City? _deployedAt;

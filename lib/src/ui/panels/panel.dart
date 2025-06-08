@@ -16,8 +16,6 @@ abstract class Panel {
 
   Color get borderColor => defaultBorderColor;
 
-  bool get isVisible => bounds != null;
-
   final List<Animation> _animations = [];
 
   void render(Terminal terminal) {

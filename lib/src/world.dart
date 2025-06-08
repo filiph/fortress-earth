@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:collection/collection.dart' show IterableNullableExtension;
 import 'package:fortress_earth/src/armies.dart';
 import 'package:fortress_earth/src/city.dart';
 import 'package:fortress_earth/src/constants.dart';
@@ -106,11 +105,11 @@ class World {
       center,
       center.pos.cardinalNeighbors
           .map(getTileWrapped)
-          .whereNotNull()
+          .nonNulls
           .toList(growable: false),
       center.pos.intercardinalNeighbors
           .map(getTileWrapped)
-          .whereNotNull()
+          .nonNulls
           .toList(growable: false),
       mapWidth,
       mapHeight,
