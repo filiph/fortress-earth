@@ -27,7 +27,7 @@ class Simulation {
   /// and will have no effect in production.
   void addEnemyCore() {
     // Try
-    Tile tile;
+    Tile? tile;
     for (var i = 0; i < 100; i++) {
       var pos = Vec(
           _random.nextInt(world.mapWidth), _random.nextInt(world.mapHeight));

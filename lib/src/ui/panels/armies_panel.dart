@@ -19,7 +19,7 @@ class UnitPanel extends Panel {
 
     var y = 2;
     for (final key in armies.playerArmies.keys) {
-      final army = armies.playerArmies[key];
+      final army = armies.playerArmies[key]!;
       var isSelected = selected.contains(army);
       var background = isSelected ? TextTheme.background : Color.black;
 

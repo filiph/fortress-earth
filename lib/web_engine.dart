@@ -12,7 +12,7 @@ import 'package:fortress_earth/src/world.dart';
 import 'package:malison/malison.dart';
 import 'package:malison/malison_web.dart';
 
-void runGame(html.CanvasElement canvas, {void Function() fullscreenCallback}) {
+void runGame(html.CanvasElement canvas, {void Function()? fullscreenCallback}) {
   final terminal = CanvasTerminal(width, height,
       Font('Menlo, Consolas', size: 14, w: 10, h: 14, x: 1, y: 11), canvas);
   final ui = UserInterface<Input>(terminal);

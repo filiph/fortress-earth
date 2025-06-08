@@ -9,9 +9,8 @@ abstract class Panel {
 
   Rect bounds;
 
-  Panel(int x, int y, int width, int height) {
-    bounds = Rect(x, y, width, height);
-  }
+  Panel(int x, int y, int width, int height)
+      : bounds = Rect(x, y, width, height);
 
   void addAnimation(Animation animation) => _animations.add(animation);
 

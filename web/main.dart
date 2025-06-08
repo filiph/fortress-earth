@@ -15,7 +15,7 @@ void main() {
 /// See: https://stackoverflow.com/a/29715395/9457
 void _toggleFullscreen() {
   // See https://stackoverflow.com/a/45192772/1416886
-  bool checkFullscreen() => 1 >= window.outerHeight - window.innerHeight;
+  bool checkFullscreen() => 1 >= window.outerHeight - window.innerHeight!;
 
   final isFullscreen = checkFullscreen();
 
@@ -23,7 +23,7 @@ void _toggleFullscreen() {
   if (isFullscreen) {
     jsElement = JsObject.fromBrowserObject(document);
   } else {
-    var div = querySelector("#canvas");
+    var div = querySelector("#canvas")!;
     jsElement = JsObject.fromBrowserObject(div);
   }
 

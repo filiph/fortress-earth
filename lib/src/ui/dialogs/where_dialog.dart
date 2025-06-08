@@ -7,7 +7,7 @@ import 'package:malison/malison_web.dart';
 class WhereDialog extends Screen<Input> {
   final List<City> cities;
 
-  City _selectedCity;
+  City? _selectedCity;
 
   final UISharedState state;
 
@@ -30,7 +30,7 @@ class WhereDialog extends Screen<Input> {
     return true;
   }
 
-  bool keyDown(int keyCode, {bool shift, bool alt}) {
+  bool keyDown(int keyCode, {required bool shift, required bool alt}) {
     for (final city in cities) {
       if (city.keyCode == keyCode) {
         _selectedCity = city;

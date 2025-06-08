@@ -9,8 +9,8 @@ import 'package:test/test.dart';
 
 void main() {
   group('small flat 5x5 world without city', () {
-    World world;
-    Simulation sim;
+    late World world;
+    late Simulation sim;
     Armies armies;
 
     const height = 20;
@@ -39,9 +39,9 @@ void main() {
   });
 
   group('small flat 5x5 world with city', () {
-    World world;
-    Simulation sim;
-    Armies armies;
+    late World world;
+    late Simulation sim;
+    late Armies armies;
 
     PlayerArmy army;
 

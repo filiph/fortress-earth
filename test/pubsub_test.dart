@@ -5,9 +5,9 @@ import 'package:test/test.dart';
 
 void main() {
   group("pubsub", () {
-    PubSub pubsub;
+    late PubSub pubsub;
 
-    List<TileTakenOverEvent> events;
+    late List<TileTakenOverEvent> events;
 
     /// A helper function to record the fact that an event was received.
     void _recordEventFired(TileTakenOverEvent event) {

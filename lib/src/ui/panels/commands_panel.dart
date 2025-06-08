@@ -8,7 +8,7 @@ class CommandsPanel extends Panel {
 
   final List<String> commands;
 
-  Color borderColor;
+  Color borderColor = Panel.defaultBorderColor;
 
   CommandsPanel(int x, int y, int width, int height, this.title, this.commands)
       : super(x, y, width, height) {

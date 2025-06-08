@@ -6,7 +6,7 @@ import 'package:logging/logging.dart';
 final _log = Logger("PubSub");
 
 class PubSub implements Sink<void> {
-  StreamController<TileTakenOverEvent> _tileTakenOver;
+  late StreamController<TileTakenOverEvent> _tileTakenOver;
 
   bool _sealed = false;
 

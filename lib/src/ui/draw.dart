@@ -16,25 +16,25 @@ const _red = Color(0xcc, 0x23, 0x39);
 
 class Draw {
   static void box(Terminal terminal, int x, int y, int width, int height,
-      [Color color]) {
+      [Color? color]) {
     _box(terminal, x, y, width, height, color, "┌", "─", "┐", "│", "└", "─",
         "┘");
   }
 
   static void doubleBox(Terminal terminal, int x, int y, int width, int height,
-      [Color color]) {
+      [Color? color]) {
     _box(terminal, x, y, width, height, color, "╔", "═", "╗", "║", "╚", "═",
         "╝");
   }
 
   static void frame(Terminal terminal, int x, int y, int width, int height,
-      [Color color]) {
+      [Color? color]) {
     _box(terminal, x, y, width, height, color, "╒", "═", "╕", "│", "└", "─",
         "┘");
   }
 
   static void helpKeys(Terminal terminal, Map<String, String> helpKeys,
-      [String query]) {
+      [String? query]) {
     // Draw the help.
     var helpTextLength = 0;
     helpKeys.forEach((key, text) {
@@ -83,7 +83,7 @@ class Draw {
   /// half unit will be missing.
   static void meter(
       Terminal terminal, int x, int y, int width, int value, int max,
-      [Color fore, Color back]) {
+      [Color? fore, Color? back]) {
     assert(max != 0);
 
     fore ??= _red;
@@ -114,7 +114,7 @@ class Draw {
   /// half unit will be missing.
   static void thinMeter(
       Terminal terminal, int x, int y, int width, int value, int max,
-      [Color fore, Color back]) {
+      [Color? fore, Color? back]) {
     assert(max != 0);
 
     fore ??= _red;
@@ -139,7 +139,7 @@ class Draw {
       int y,
       int width,
       int height,
-      Color color,
+      Color? color,
       String topLeft,
       String top,
       String topRight,

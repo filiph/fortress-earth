@@ -35,7 +35,7 @@ class Neighborhood {
   int get cardinalsWithGoodInThem =>
       _cardinalNeighbors.where((t) => t.isGood).length;
 
-  City get closestCity => center.closestCity;
+  City? get closestCity => center.closestCity;
 
   /// The difference between good and evil.
   ///
@@ -45,7 +45,7 @@ class Neighborhood {
   int get distanceSquaredToCity {
     // TODO: toroidal wrapping
     if (closestCity == null) return infiniteDistance;
-    return (pos - closestCity.pos).lengthSquared;
+    return (pos - closestCity!.pos).lengthSquared;
   }
 
   double get evil =>
@@ -87,7 +87,7 @@ class Neighborhood {
   Direction get towardsCity {
     if (closestCity == null) return Direction.none;
     // TODO: toroidal wrapping
-    return (closestCity.pos - pos).nearestDirection;
+    return (closestCity!.pos - pos).nearestDirection;
   }
 
   Direction get towardsEnemy {

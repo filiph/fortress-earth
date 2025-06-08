@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:collection/collection.dart' show IterableNullableExtension;
 import 'package:fortress_earth/src/armies.dart';
 import 'package:fortress_earth/src/city.dart';
 import 'package:fortress_earth/src/constants.dart';
@@ -39,10 +40,11 @@ class World {
   Map<Vec, City> _cities;
 
   World(this.mapWidth, this.mapHeight, Tile Function(Vec) generator,
-      {Iterable<City> cities}) {
-    _currentTime = beginningOfPlay;
-    _cities = Map.fromIterable(cities ?? defaultCities,
-        key: (dynamic c) => (c as City).pos);
+      {Iterable<City>? cities})
+      : _cities = Map.fromIterable(cities ?? defaultCities,
+            key: (dynamic c) => (c as City).pos),
+        _currentTime = beginningOfPlay,
+        _tiles = Array2D<Tile>.generated(mapWidth, mapHeight, generator) {
     assert(() {
       final keyCodes = Set<int>();
       for (final city in _cities.values) {
@@ -51,7 +53,6 @@ class World {
       }
       return true;
     }(), "Cities must have unique keyCode callsigns.");
-    _tiles = Array2D<Tile>.generated(mapWidth, mapHeight, generator);
     _updateTilesWithClosestCities();
   }
 
@@ -90,7 +91,7 @@ class World {
   }
 
   Neighborhood _getNeighborhoodOf(Tile center) {
-    Tile getTileWrapped(Vec v) {
+    Tile? getTileWrapped(Vec v) {
       final wrapped = _toroidalWrap(v);
       if (wrapped == null) return null;
       return _tiles[wrapped];
@@ -100,11 +101,11 @@ class World {
       center,
       center.pos.cardinalNeighbors
           .map(getTileWrapped)
-          .where((t) => t != null)
+          .whereNotNull()
           .toList(growable: false),
       center.pos.intercardinalNeighbors
           .map(getTileWrapped)
-          .where((t) => t != null)
+          .whereNotNull()
           .toList(growable: false),
       mapWidth,
       mapHeight,
@@ -113,7 +114,7 @@ class World {
 
   /// Wraps the vector to [mapWidth] and [mapHeight] toroidally.
   /// Returns `null` if [vec.y] is out of bounds.
-  Vec _toroidalWrap(Vec vec) {
+  Vec? _toroidalWrap(Vec vec) {
     var x = vec.x;
     var y = vec.y;
     if (y < 0 || y >= mapHeight) return null;
@@ -126,7 +127,7 @@ class World {
     for (final tile in _tiles) {
       // TODO: toroidal distance
       // TODO(next): A* path, ideally pre-computed
-      City closest;
+      City? closest;
       int closestDistance = 0xFFFFFFFF;
       for (final candidate in _cities.values) {
         final distance = (tile.pos - candidate.pos).lengthSquared;

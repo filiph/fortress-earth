@@ -116,7 +116,7 @@ abstract class Army {
   final ticksPerMove = 10;
 
   Army._(this.name, this.color, this.isEvil,
-      {@required Vec initialPosition, Vec initialDestination})
+      {required Vec initialPosition, Vec? initialDestination})
       : assert(initialPosition != null),
         _pos = initialPosition {
     _destination = initialDestination ?? _pos;
@@ -201,7 +201,7 @@ class EvilArmy extends Army {
 
   final DateTime spawnTime;
 
-  EvilArmy(String name, {DateTime spawnTime, Vec initialPosition})
+  EvilArmy(String name, {DateTime? spawnTime, required Vec initialPosition})
       : spawnTime = spawnTime ?? beginningOfPlay,
         super._(name, Color.red, true, initialPosition: initialPosition);
 
@@ -223,14 +223,14 @@ class PlayerArmy extends Army {
   final int keyCode;
 
   /// The city that this Army was stationed at last.
-  City _latestCity;
+  City? _latestCity;
 
-  City _deployedAt;
+  City? _deployedAt;
 
   RangeMode _rangeMode = RangeMode.tight;
 
   PlayerArmy(this.keyCode, String name, Color color,
-      {Vec initialPosition = const Vec(50, 18), Vec initialDestination})
+      {Vec initialPosition = const Vec(50, 18), Vec? initialDestination})
       : super._(name, color, false,
             initialPosition: initialPosition,
             initialDestination: initialDestination);
@@ -238,7 +238,7 @@ class PlayerArmy extends Army {
   /// The city at which this army is currently deployed. Similar to
   /// [_latestCity] with one difference: [deployedAt] reverts to `null`
   /// as soon as this army leaves the city.
-  City get deployedAt => _deployedAt;
+  City? get deployedAt => _deployedAt;
 
   @override
   double get maxDeploymentRange {
@@ -266,7 +266,7 @@ class PlayerArmy extends Army {
   bool canExpandTo(Tile tile) {
     if (deployedAt == null) return false;
 
-    final Vec home = deployedAt.pos;
+    final Vec home = deployedAt!.pos;
     final distanceSquared = (tile.pos - home).lengthSquared;
     return distanceSquared <= _maxDeploymentRangeSquared;
   }
@@ -280,7 +280,7 @@ class PlayerArmy extends Army {
     }
     _latestCity = _deployedAt;
     if (_deployedAt != null) {
-      _deployedAt.release(this);
+      _deployedAt!.release(this);
       _deployedAt = null;
     }
     super.setDestination(vec);
@@ -299,7 +299,7 @@ class PlayerArmy extends Army {
     if (hasArrived) {
       final city = world.cities[pos];
       _deployedAt = city;
-      _deployedAt.deploy(this);
+      _deployedAt!.deploy(this);
       _latestCity = city;
 
       _moveToClosestUnoccupiedTile(
@@ -312,7 +312,7 @@ class PlayerArmy extends Army {
     final List<Vec> open = <Vec>[];
     final Set<Vec> close = Set();
     open.addAll(start.neighbors);
-    Vec result;
+    Vec? result;
 
     while (open.isNotEmpty) {
       var current = open.removeAt(0);

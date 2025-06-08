@@ -16,7 +16,7 @@ import 'package:malison/malison_web.dart';
 import 'package:piecemeal/piecemeal.dart';
 
 class GameScreen extends Screen<Input> {
-  final void Function() fullscreenCallback;
+  final void Function()? fullscreenCallback;
 
   Stopwatch _stopwatch = Stopwatch();
 
@@ -28,7 +28,7 @@ class GameScreen extends Screen<Input> {
 
   double _gradientHighClamp = 1;
 
-  UnitPanel _unitPanel;
+  late UnitPanel _unitPanel;
 
   final ChatPanel _chatPanel = ChatPanel(
       mapOffsetLeft,
@@ -51,11 +51,12 @@ class GameScreen extends Screen<Input> {
   GameScreen(this.sim, this.state, {this.fullscreenCallback})
       : _citiesPanel = CitiesPanel(mapOffsetLeft + mapWidth - 30,
             mapOffsetTop + mapHeight - 4, 30, 16, sim.world.cities, state) {
+    // TODO: move to field definition
     _unitPanel = UnitPanel(mapOffsetLeft + 50, mapOffsetTop + mapHeight - 2, 47,
         14, sim.armies, UnmodifiableListView<PlayerArmy>(_selectedArmies));
   }
 
-  void activate(Screen<Input> popped, Object result) {
+  void activate(Screen<Input> popped, Object? result) {
     if (result == null) {
       _selectedArmies.clear();
       return;
@@ -87,7 +88,7 @@ class GameScreen extends Screen<Input> {
         break;
 
       case Input.fullscreen:
-        if (fullscreenCallback != null) fullscreenCallback();
+        if (fullscreenCallback != null) fullscreenCallback!();
         break;
 
       case Input.sound:
@@ -113,7 +114,7 @@ class GameScreen extends Screen<Input> {
     return true;
   }
 
-  bool keyDown(int keyCode, {bool shift, bool alt}) {
+  bool keyDown(int keyCode, {required bool shift, required bool alt}) {
     var army = _getArmyFromKeyCode(keyCode);
     if (army != null) {
       assert(_selectedArmies.isEmpty);
@@ -169,12 +170,12 @@ class GameScreen extends Screen<Input> {
         final tile = sim.world.tiles[vec];
 
         String char;
-        Color foregroundColor;
+        Color? foregroundColor;
         Color backgroundColor = tile.backgroundColor;
         if (_showNeedGradient) {
           //double value = tile.debugEvilDemandGradient;
           double value = tile.getDebugArmyDemandGradient(
-              sim.armies.playerArmies[KeyCode.zero]);
+              sim.armies.playerArmies[KeyCode.zero]!);
           _gradientLowClamp = min(value, _gradientLowClamp);
           _gradientHighClamp = max(value, _gradientHighClamp);
           double normalized =
@@ -183,7 +184,7 @@ class GameScreen extends Screen<Input> {
           char = const [0, 1, 2, 3, 4, 5, 5, 6, 7, 8, 9][index].toString();
         } else if (sim.world.cities.containsKey(vec)) {
           if (state.citiesPanelActive) {
-            char = String.fromCharCode(sim.world.cities[vec].keyCode)
+            char = String.fromCharCode(sim.world.cities[vec]!.keyCode)
                 .toUpperCase();
             foregroundColor = Color.black;
             backgroundColor = tile.isEvil ? Color.red : Color.yellow;
@@ -261,7 +262,7 @@ class GameScreen extends Screen<Input> {
     _latestUpdateTime = _stopwatch.elapsedMicroseconds;
   }
 
-  PlayerArmy _getArmyFromKeyCode(int keyCode) {
+  PlayerArmy? _getArmyFromKeyCode(int keyCode) {
     return sim.armies.playerArmies[keyCode];
   }
 

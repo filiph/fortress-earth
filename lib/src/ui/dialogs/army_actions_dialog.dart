@@ -24,7 +24,7 @@ class ArmyActionsDialog extends Screen<Input> {
   /// Returns true if an army was 'caught' by the keyCode.
   final bool Function(int) onKeyCallback;
 
-  Input _selectedInput;
+  Input? _selectedInput;
 
   final int _screenX;
 
@@ -39,7 +39,7 @@ class ArmyActionsDialog extends Screen<Input> {
 
   bool get isTransparent => true;
 
-  void activate(Screen<Input> popped, Object result) {
+  void activate(Screen<Input> popped, Object? result) {
     if (result == null) return;
     assert(result is City);
     assert(popped is WhereDialog);
@@ -82,7 +82,7 @@ class ArmyActionsDialog extends Screen<Input> {
     return true;
   }
 
-  bool keyDown(int keyCode, {bool shift, bool alt}) {
+  bool keyDown(int keyCode, {required bool shift, required bool alt}) {
     if (shift || alt) return false;
     var isChanged = onKeyCallback(keyCode);
     if (isChanged) {
@@ -93,7 +93,7 @@ class ArmyActionsDialog extends Screen<Input> {
     return isChanged;
   }
 
-  CommandsPanel _commandsPanel;
+  late CommandsPanel _commandsPanel;
 
   void render(Terminal terminal) {
     terminal.rect(_screenX, _screenY, 47, 6).clear();

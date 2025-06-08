@@ -43,10 +43,10 @@ void main(List<String> args) {
   final width = int.parse(results['width'] as String);
   final height = int.parse(results['height'] as String);
   final bottomTrim = int.parse(results['bottom-trim'] as String) / 100;
-  final waterMapPath = (results['water-map'] as String);
+  final waterMapPath = (results['water-map'] as String?);
 
   final file = File(imagePath);
-  final image = decodeNamedImage(imagePath, file.readAsBytesSync());
+  final image = decodeNamedImage(imagePath, file.readAsBytesSync())!;
 
   final xRatio = image.width / width;
   final yRatio = (image.height * (1 - bottomTrim)) / height;
@@ -73,7 +73,7 @@ void main(List<String> args) {
 
   final waterMapFile = File(waterMapPath);
   Image waterImage =
-      decodeNamedImage(waterMapPath, waterMapFile.readAsBytesSync());
+      decodeNamedImage(waterMapPath, waterMapFile.readAsBytesSync())!;
 
   if (waterImage.width != image.width || waterImage.height != image.height) {
     stderr.writeln("Water image must have same dimensions as image.");
