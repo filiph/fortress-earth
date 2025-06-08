@@ -9,7 +9,6 @@ environment:
 dependencies:
   malison: ^0.13.0
   piecemeal: ^2.0.0
-  collection: ^1.15.0-nullsafety.4
 
 dev_dependencies:
   args: ^2.4.2
