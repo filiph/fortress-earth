@@ -21,8 +21,7 @@ void main(List<String> args) {
       defaultsTo: '0');
   parser.addOption('water-map',
       help: 'Image with same dimensions as the main one '
-          'which has water as '
-          '0x${waterTileColor.toRadixString(16).toUpperCase()}.');
+          'which has water as $waterTileColor.');
 
   final results = parser.parse(args);
 
@@ -47,7 +46,7 @@ void main(List<String> args) {
   final waterMapPath = (results['water-map'] as String);
 
   final file = File(imagePath);
-  final image = decodeNamedImage(file.readAsBytesSync(), imagePath);
+  final image = decodeNamedImage(imagePath, file.readAsBytesSync());
 
   final xRatio = image.width / width;
   final yRatio = (image.height * (1 - bottomTrim)) / height;
@@ -59,7 +58,10 @@ void main(List<String> args) {
       final imageY = y * yRatio;
       final pixel = image.getPixelCubic(imageX, imageY);
       final vecHashCode = Vec(x, y).hashCode;
-      final rgb = pixel & 0xFFFFFF;
+      assert(pixel.format == Format.uint8);
+      final rgb = "${(pixel.r as int).toString().padLeft(2, '0')}"
+          "${(pixel.g as int).toString().padLeft(2, '0')}"
+          "${(pixel.b as int).toString().padLeft(2, '0')}";
       print("  $vecHashCode: $rgb,");
     }
   }
@@ -71,7 +73,7 @@ void main(List<String> args) {
 
   final waterMapFile = File(waterMapPath);
   Image waterImage =
-      decodeNamedImage(waterMapFile.readAsBytesSync(), waterMapPath);
+      decodeNamedImage(waterMapPath, waterMapFile.readAsBytesSync());
 
   if (waterImage.width != image.width || waterImage.height != image.height) {
     stderr.writeln("Water image must have same dimensions as image.");
@@ -105,4 +107,4 @@ final _waterMapPreamble = '''
 
 const Map<int, bool> _isOcean = {''';
 
-const waterTileColor = 0xFFFFFFFF;
+final waterTileColor = ColorUint8.rgba(0xFF, 0xFF, 0xFF, 0xFF);

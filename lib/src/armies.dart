@@ -309,7 +309,7 @@ class PlayerArmy extends Army {
 
   void _moveToClosestUnoccupiedTile(
       World world, Vec start, List<PlayerArmy> otherArmies) {
-    final List<Vec> open = List();
+    final List<Vec> open = <Vec>[];
     final Set<Vec> close = Set();
     open.addAll(start.neighbors);
     Vec result;
