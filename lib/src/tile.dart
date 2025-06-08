@@ -13,7 +13,9 @@ final _random = Random();
 /// Once we know the attack will succeed, this function returns the exact
 /// results.
 _FightResult _resolveSuccessfulAttack(
-    int attackerStrength, int defenderStrength) {
+  int attackerStrength,
+  int defenderStrength,
+) {
   assert(attackerStrength >= defenderStrength);
   final targetLosses = defenderStrength;
   final attackerLosses = targetLosses ~/ 2;
@@ -83,12 +85,11 @@ class Tile {
   /// Memoized number of evil units on this tile.
   int _evil = 0;
 
-  Tile(
-    this.pos,
-    this.roughness, {
-    this.backgroundColor = Color.purple,
-  }) : neutralForegroundColor =
-            backgroundColor.blend(Color.black, 0.3 + _random.nextDouble() / 3);
+  Tile(this.pos, this.roughness, {this.backgroundColor = Color.purple})
+    : neutralForegroundColor = backgroundColor.blend(
+        Color.black,
+        0.3 + _random.nextDouble() / 3,
+      );
 
   /// Just show the gradient of the evil army.
   double get debugEvilDemandGradient => _unitDemandGradient.entries
@@ -108,7 +109,9 @@ class Tile {
     } else {
       if (!(isNeutral || isOcean)) print(this);
       assert(
-          isNeutral || isOcean, "Tile is not good or evil or neutral: $this");
+        isNeutral || isOcean,
+        "Tile is not good or evil or neutral: $this",
+      );
       return neutralForegroundColor;
     }
   }
@@ -153,7 +156,8 @@ class Tile {
   }
 
   @override
-  String toString() => 'Tile<'
+  String toString() =>
+      'Tile<'
       'x=${pos.x},y=${pos.y},'
       'good=$good,evil=$evil,roughness=$roughness,'
       'ocean=$isOcean'
@@ -176,8 +180,9 @@ class Tile {
     }
 
     // Increase demand when there are enemy armies here (e.g. evil core).
-    final bool enemyArmiesOnThisTile = allArmies.armies
-        .any((other) => other.isEvil != army.isEvil && other.pos == pos);
+    final bool enemyArmiesOnThisTile = allArmies.armies.any(
+      (other) => other.isEvil != army.isEvil && other.pos == pos,
+    );
     if (enemyArmiesOnThisTile) {
       unitDemand += 50;
     }
@@ -214,13 +219,15 @@ class Tile {
     const timeDecay = 0.2;
     _unitDemandGradient[army] = _unitDemandGradient[army]! * timeDecay;
 
-    final landNeighbors =
-        hood.neighbors.where((t) => !t.isOcean).toList(growable: false);
+    final landNeighbors = hood.neighbors
+        .where((t) => !t.isOcean)
+        .toList(growable: false);
     if (landNeighbors.length > 0) {
       final maxNeedGradient = landNeighbors.fold<double>(
-          0,
-          (prev, tile) =>
-              max(prev, tile._unitDemandGradient.putIfAbsent(army, () => 0)));
+        0,
+        (prev, tile) =>
+            max(prev, tile._unitDemandGradient.putIfAbsent(army, () => 0)),
+      );
       const spaceDecay = 0.8;
       _unitDemandGradient[army] =
           _unitDemandGradient[army]! + maxNeedGradient * spaceDecay;
@@ -231,7 +238,11 @@ class Tile {
   }
 
   void updateUnits(
-      Neighborhood hood, Army army, DateTime currentTime, PubSub pubSub) {
+    Neighborhood hood,
+    Army army,
+    DateTime currentTime,
+    PubSub pubSub,
+  ) {
     // Short-circuit ocean tiles: they can't update.
     if (isOcean) return;
 
@@ -245,9 +256,10 @@ class Tile {
     if (!army.isAlive && _units[army]! > 0) {
       final dieCount = max(_units[army]! ~/ 2, 1);
       assert(
-          dieCount <= _units[army]!,
-          "Tried to remove more units ($dieCount) "
-          "then there are (${_units[army]}) of $army");
+        dieCount <= _units[army]!,
+        "Tried to remove more units ($dieCount) "
+        "then there are (${_units[army]}) of $army",
+      );
       _units[army] = _units[army]! - dieCount;
       army.bury(dieCount);
       _updateGoodOrEvil(army.isEvil, -dieCount);
@@ -303,8 +315,11 @@ class Tile {
 
     // Or offer good units back if we're at the place.
     if (_units[playerArmy]! > 0) {
-      final withdrawals =
-          _offerUnits(playerArmy, closestCity!, _units[playerArmy]!);
+      final withdrawals = _offerUnits(
+        playerArmy,
+        closestCity!,
+        _units[playerArmy]!,
+      );
       _units[playerArmy] = _units[playerArmy]! - withdrawals;
       _updateGoodOrEvil(false, withdrawals);
     }
@@ -338,13 +353,17 @@ class Tile {
     _unitSafeDeploymentGradient[army] =
         _unitSafeDeploymentGradient[army]! * timeDecay;
 
-    final landNeighbors =
-        hood.neighbors.where((t) => !t.isOcean).toList(growable: false);
+    final landNeighbors = hood.neighbors
+        .where((t) => !t.isOcean)
+        .toList(growable: false);
     if (landNeighbors.length > 0) {
       final maxNeedGradient = landNeighbors.fold<double>(
-          0,
-          (prev, tile) => max(prev,
-              tile._unitSafeDeploymentGradient.putIfAbsent(army, () => 0)));
+        0,
+        (prev, tile) => max(
+          prev,
+          tile._unitSafeDeploymentGradient.putIfAbsent(army, () => 0),
+        ),
+      );
       const spaceDecay = 0.8;
       _unitSafeDeploymentGradient[army] =
           _unitSafeDeploymentGradient[army]! + maxNeedGradient * spaceDecay;
@@ -414,11 +433,16 @@ class Tile {
   }
 
   void _updateTileAfterBeingTakenOver(
-      Army army, PubSub pubSub, _FightResult result) {
+    Army army,
+    PubSub pubSub,
+    _FightResult result,
+  ) {
     _units.updateAll((a, n) {
       if (n == 0) return 0;
-      assert(a.isEvil != army.isEvil,
-          "There was a friendly unit in attacked tile $this");
+      assert(
+        a.isEvil != army.isEvil,
+        "There was a friendly unit in attacked tile $this",
+      );
       a.bury(n);
       return 0;
     });
@@ -472,7 +496,9 @@ class Tile {
   }
 
   void _updateUnitsByMovingWithSafeDeploymentGradient(
-      Neighborhood hood, Army army) {
+    Neighborhood hood,
+    Army army,
+  ) {
     final safestTile = hood.neighbors.fold<Tile?>(null, (prev, tile) {
       if (tile.isOcean) return prev;
       if (tile.isEnemyFactionOccupied(army)) return prev;
@@ -480,7 +506,8 @@ class Tile {
       prev._unitSafeDeploymentGradient[army] ??= 0;
       tile._unitSafeDeploymentGradient[army] ??= 0;
       if (tile._unitSafeDeploymentGradient[army]! >
-          prev._unitSafeDeploymentGradient[army]!) return tile;
+          prev._unitSafeDeploymentGradient[army]!)
+        return tile;
       return prev;
     });
 
@@ -517,8 +544,9 @@ class Tile {
       return false;
     }
 
-    final friendlyTilesCount =
-        hood.neighbors.where((t) => t.isEvil == army.isEvil).length;
+    final friendlyTilesCount = hood.neighbors
+        .where((t) => t.isEvil == army.isEvil)
+        .length;
     final enemyTiles = hood.neighbors
         .where((t) => t.isEnemyFactionOccupied(army) && army.canExpandTo(t))
         .toList(growable: false);
@@ -552,11 +580,12 @@ class Tile {
     // Update this tile.
     _units[army] = result.attackerStayBehind;
     _updateGoodOrEvil(
-        army.isEvil,
-        // The difference between the original strength on this tile
-        // and the resulting one (after some attackers die and others
-        // move forward).
-        result.attackerStayBehind - result.attackerStartingStrength);
+      army.isEvil,
+      // The difference between the original strength on this tile
+      // and the resulting one (after some attackers die and others
+      // move forward).
+      result.attackerStayBehind - result.attackerStartingStrength,
+    );
 
     // Remove defenders, add attackers, and notify via pubsub.
     defenderTile._updateTileAfterBeingTakenOver(army, pubSub, result);
@@ -591,12 +620,13 @@ class _FightResult {
   final int defenderStartingStrength;
   final int attackerLosses;
   final int attackerStayBehind;
-  _FightResult(
-      {required this.attackerStartingStrength,
-      required this.defenderStartingStrength,
-      required this.defenderLosses,
-      required this.attackerLosses,
-      required this.attackerStayBehind});
+  _FightResult({
+    required this.attackerStartingStrength,
+    required this.defenderStartingStrength,
+    required this.defenderLosses,
+    required this.attackerLosses,
+    required this.attackerStayBehind,
+  });
 
   int get attackerMoveForward =>
       attackerStartingStrength - attackerLosses - attackerLosses;

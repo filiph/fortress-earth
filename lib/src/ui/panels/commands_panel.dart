@@ -11,7 +11,7 @@ class CommandsPanel extends Panel {
   Color borderColor = Panel.defaultBorderColor;
 
   CommandsPanel(int x, int y, int width, int height, this.title, this.commands)
-      : super(x, y, width, height) {
+    : super(x, y, width, height) {
     addAnimation(WipeAnimation());
   }
 

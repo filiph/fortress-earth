@@ -26,27 +26,31 @@ void main() {
     test("subscription works", () {
       pubsub.tileTakenOver.listen(_recordEventFired);
       pubsub.seal();
-      pubsub
-          .publishTileTakenOver(TileTakenOverEvent(Tile(Vec(0, 0), 20), true));
+      pubsub.publishTileTakenOver(
+        TileTakenOverEvent(Tile(Vec(0, 0), 20), true),
+      );
       expect(events.length, 1);
       expect(events.single.tile.pos, Vec(0, 0));
     });
 
     test("event doesn't fire when there are no listener", () {
       pubsub.seal();
-      pubsub
-          .publishTileTakenOver(TileTakenOverEvent(Tile(Vec(0, 0), 20), true));
+      pubsub.publishTileTakenOver(
+        TileTakenOverEvent(Tile(Vec(0, 0), 20), true),
+      );
       expect(events.length, 0);
     });
 
     test("event doesn't fire after subscription cancelled", () {
       final sub = pubsub.tileTakenOver.listen(_recordEventFired);
       pubsub.seal();
-      pubsub
-          .publishTileTakenOver(TileTakenOverEvent(Tile(Vec(1, 0), 20), true));
+      pubsub.publishTileTakenOver(
+        TileTakenOverEvent(Tile(Vec(1, 0), 20), true),
+      );
       sub.cancel();
       pubsub.publishTileTakenOver(
-          TileTakenOverEvent(Tile(Vec(0, 100), 20), true));
+        TileTakenOverEvent(Tile(Vec(0, 100), 20), true),
+      );
       expect(events.length, 1);
       expect(events.single.tile.pos, Vec(1, 0));
     });
@@ -67,8 +71,9 @@ void main() {
       pubsub.tileTakenOver.listen(_recordEventFired);
       pubsub.tileTakenOver.listen(secondRecord);
       pubsub.seal();
-      pubsub
-          .publishTileTakenOver(TileTakenOverEvent(Tile(Vec(1, 0), 20), true));
+      pubsub.publishTileTakenOver(
+        TileTakenOverEvent(Tile(Vec(1, 0), 20), true),
+      );
     });
   });
 }

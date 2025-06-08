@@ -47,7 +47,9 @@ class PubSub implements Sink<void> {
 
   void _assertNoSubscribersAfterSealed() {
     assert(
-        !_sealed, "Please do not add more subscribers after pubsub is sealed.");
+      !_sealed,
+      "Please do not add more subscribers after pubsub is sealed.",
+    );
   }
 
   void _assertSealedBeforePublishing() {

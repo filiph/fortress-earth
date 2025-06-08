@@ -39,12 +39,17 @@ class World {
 
   Map<Vec, City> _cities;
 
-  World(this.mapWidth, this.mapHeight, Tile Function(Vec) generator,
-      {Iterable<City>? cities})
-      : _cities = Map.fromIterable(cities ?? defaultCities,
-            key: (dynamic c) => (c as City).pos),
-        _currentTime = beginningOfPlay,
-        _tiles = Array2D<Tile>.generated(mapWidth, mapHeight, generator) {
+  World(
+    this.mapWidth,
+    this.mapHeight,
+    Tile Function(Vec) generator, {
+    Iterable<City>? cities,
+  }) : _cities = Map.fromIterable(
+         cities ?? defaultCities,
+         key: (dynamic c) => (c as City).pos,
+       ),
+       _currentTime = beginningOfPlay,
+       _tiles = Array2D<Tile>.generated(mapWidth, mapHeight, generator) {
     assert(() {
       final keyCodes = Set<int>();
       for (final city in _cities.values) {

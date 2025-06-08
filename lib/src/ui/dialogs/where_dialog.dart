@@ -12,7 +12,7 @@ class WhereDialog extends Screen<Input> {
   final UISharedState state;
 
   WhereDialog(Iterable<City> cities, this.state)
-      : cities = cities.toList(growable: false);
+    : cities = cities.toList(growable: false);
 
   bool get isTransparent => true;
 

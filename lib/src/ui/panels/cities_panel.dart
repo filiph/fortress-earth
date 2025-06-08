@@ -11,10 +11,15 @@ class CitiesPanel extends Panel {
   final UISharedState state;
 
   CitiesPanel(
-      int x, int y, int width, int height, Map<Vec, City> cities, this.state)
-      : _cities = cities.values.toList(growable: false)
-          ..sort((a, b) => a.name.compareTo(b.name)),
-        super(x, y, width, height);
+    int x,
+    int y,
+    int width,
+    int height,
+    Map<Vec, City> cities,
+    this.state,
+  ) : _cities = cities.values.toList(growable: false)
+        ..sort((a, b) => a.name.compareTo(b.name)),
+      super(x, y, width, height);
 
   Color get borderColor =>
       state.citiesPanelActive ? TextTheme.important : Panel.defaultBorderColor;

@@ -31,10 +31,11 @@ class GameScreen extends Screen<Input> {
   late UnitPanel _unitPanel;
 
   final ChatPanel _chatPanel = ChatPanel(
-      mapOffsetLeft,
-      mapOffsetTop + mapHeight ~/ 1.7,
-      32,
-      height - (mapOffsetTop + mapHeight ~/ 1.7));
+    mapOffsetLeft,
+    mapOffsetTop + mapHeight ~/ 1.7,
+    32,
+    height - (mapOffsetTop + mapHeight ~/ 1.7),
+  );
 
   final CitiesPanel _citiesPanel;
 
@@ -49,11 +50,23 @@ class GameScreen extends Screen<Input> {
   final List<PlayerArmy> _selectedArmies = [];
 
   GameScreen(this.sim, this.state, {this.fullscreenCallback})
-      : _citiesPanel = CitiesPanel(mapOffsetLeft + mapWidth - 30,
-            mapOffsetTop + mapHeight - 4, 30, 16, sim.world.cities, state) {
+    : _citiesPanel = CitiesPanel(
+        mapOffsetLeft + mapWidth - 30,
+        mapOffsetTop + mapHeight - 4,
+        30,
+        16,
+        sim.world.cities,
+        state,
+      ) {
     // TODO: move to field definition
-    _unitPanel = UnitPanel(mapOffsetLeft + 50, mapOffsetTop + mapHeight - 2, 47,
-        14, sim.armies, UnmodifiableListView<PlayerArmy>(_selectedArmies));
+    _unitPanel = UnitPanel(
+      mapOffsetLeft + 50,
+      mapOffsetTop + mapHeight - 2,
+      47,
+      14,
+      sim.armies,
+      UnmodifiableListView<PlayerArmy>(_selectedArmies),
+    );
   }
 
   void activate(Screen<Input> popped, Object? result) {
@@ -119,26 +132,28 @@ class GameScreen extends Screen<Input> {
     if (army != null) {
       assert(_selectedArmies.isEmpty);
       _selectedArmies.add(army);
-      ui.push(ArmyActionsDialog(
-        50,
-        mapOffsetTop + mapHeight - 6,
-        sim.world,
-        // The initial list of armies starts with one.
-        UnmodifiableListView(_selectedArmies),
-        state,
-        (additionalKeyCode) {
-          var additional = _getArmyFromKeyCode(additionalKeyCode);
-          if (additional == null) {
-            return false;
-          }
-          if (_selectedArmies.contains(additional)) {
-            _selectedArmies.remove(additional);
-          } else {
-            _selectedArmies.add(additional);
-          }
-          return true;
-        },
-      ));
+      ui.push(
+        ArmyActionsDialog(
+          50,
+          mapOffsetTop + mapHeight - 6,
+          sim.world,
+          // The initial list of armies starts with one.
+          UnmodifiableListView(_selectedArmies),
+          state,
+          (additionalKeyCode) {
+            var additional = _getArmyFromKeyCode(additionalKeyCode);
+            if (additional == null) {
+              return false;
+            }
+            if (_selectedArmies.contains(additional)) {
+              _selectedArmies.remove(additional);
+            } else {
+              _selectedArmies.add(additional);
+            }
+            return true;
+          },
+        ),
+      );
       audioPlayer.bleep();
       return true;
     }
@@ -175,17 +190,22 @@ class GameScreen extends Screen<Input> {
         if (_showNeedGradient) {
           //double value = tile.debugEvilDemandGradient;
           double value = tile.getDebugArmyDemandGradient(
-              sim.armies.playerArmies[KeyCode.zero]!);
+            sim.armies.playerArmies[KeyCode.zero]!,
+          );
           _gradientLowClamp = min(value, _gradientLowClamp);
           _gradientHighClamp = max(value, _gradientHighClamp);
-          double normalized =
-              _normalizeValue(value, _gradientLowClamp, _gradientHighClamp);
+          double normalized = _normalizeValue(
+            value,
+            _gradientLowClamp,
+            _gradientHighClamp,
+          );
           int index = (normalized * 10).floor();
           char = const [0, 1, 2, 3, 4, 5, 5, 6, 7, 8, 9][index].toString();
         } else if (sim.world.cities.containsKey(vec)) {
           if (state.citiesPanelActive) {
-            char = String.fromCharCode(sim.world.cities[vec]!.keyCode)
-                .toUpperCase();
+            char = String.fromCharCode(
+              sim.world.cities[vec]!.keyCode,
+            ).toUpperCase();
             foregroundColor = Color.black;
             backgroundColor = tile.isEvil ? Color.red : Color.yellow;
           } else {
@@ -214,15 +234,25 @@ class GameScreen extends Screen<Input> {
     // Evil armies on map.
     for (final army in sim.armies.evilArmies) {
       if (!army.isAlive) continue;
-      terminal.drawChar(mapOffsetLeft + army.pos.x, mapOffsetTop + army.pos.y,
-          'X'.codeUnitAt(0), Color.black, army.color);
+      terminal.drawChar(
+        mapOffsetLeft + army.pos.x,
+        mapOffsetTop + army.pos.y,
+        'X'.codeUnitAt(0),
+        Color.black,
+        army.color,
+      );
     }
 
     // Player armies on map.
     for (final army in sim.armies.playerArmies.values) {
       if (!army.isAlive) continue;
-      terminal.drawChar(mapOffsetLeft + army.pos.x, mapOffsetTop + army.pos.y,
-          army.keyCode, Color.black, army.color);
+      terminal.drawChar(
+        mapOffsetLeft + army.pos.x,
+        mapOffsetTop + army.pos.y,
+        army.keyCode,
+        Color.black,
+        army.color,
+      );
     }
 
     // Army table / panel.
@@ -236,13 +266,18 @@ class GameScreen extends Screen<Input> {
 
     terminal.writeAt(width - 30, 0, "  Fortress Earth - tech demo  ");
     terminal.writeAt(
-        width - 30, 1, "   ${sim.world.currentTime.toIso8601String()}    ");
+      width - 30,
+      1,
+      "   ${sim.world.currentTime.toIso8601String()}    ",
+    );
 
     if (_showFramerate) {
-      final renderMilliseconds =
-          (_latestRenderTime / 1000).toStringAsFixed(3).padLeft(6);
-      final updateMilliseconds =
-          (_latestUpdateTime / 1000).toStringAsFixed(3).padLeft(6);
+      final renderMilliseconds = (_latestRenderTime / 1000)
+          .toStringAsFixed(3)
+          .padLeft(6);
+      final updateMilliseconds = (_latestUpdateTime / 1000)
+          .toStringAsFixed(3)
+          .padLeft(6);
       terminal.writeAt(0, 0, "render: ${renderMilliseconds}ms  ");
       terminal.writeAt(18, 0, "update: ${updateMilliseconds}ms  ");
     }

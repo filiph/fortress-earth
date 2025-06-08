@@ -9,21 +9,37 @@ import 'package:piecemeal/piecemeal.dart';
 class Armies {
   static final _defaultPlayerArmies =
       Map<int, PlayerArmy>.unmodifiable(<int, PlayerArmy>{
-    KeyCode.one: PlayerArmy(KeyCode.one, "Marines", Color.lightGreen,
-        initialDestination: Vec(92, 18)),
-    KeyCode.two: PlayerArmy(KeyCode.two, "Marines", Color.lightGreen,
-        initialDestination: Vec(37, 26)),
-    KeyCode.three: PlayerArmy(KeyCode.three, "Marines", Color.lightGreen),
-    KeyCode.four: PlayerArmy(KeyCode.four, "Infantry", Color.lightBlue),
-    KeyCode.five: PlayerArmy(KeyCode.five, "Infantry", Color.lightBlue),
-    KeyCode.six: PlayerArmy(KeyCode.six, "Infantry", Color.lightBlue),
-    KeyCode.seven: PlayerArmy(KeyCode.seven, "Air Force", Color.lightAqua),
-    KeyCode.eight: PlayerArmy(KeyCode.eight, "Squad", Color.lightPurple,
-        initialDestination: Vec(77, 17)),
-    KeyCode.nine: PlayerArmy(KeyCode.nine, "Squad", Color.lightPurple),
-    KeyCode.zero: PlayerArmy(KeyCode.zero, "HQ", Color.lightGold,
-        initialDestination: Vec(39, 13)),
-  });
+        KeyCode.one: PlayerArmy(
+          KeyCode.one,
+          "Marines",
+          Color.lightGreen,
+          initialDestination: Vec(92, 18),
+        ),
+        KeyCode.two: PlayerArmy(
+          KeyCode.two,
+          "Marines",
+          Color.lightGreen,
+          initialDestination: Vec(37, 26),
+        ),
+        KeyCode.three: PlayerArmy(KeyCode.three, "Marines", Color.lightGreen),
+        KeyCode.four: PlayerArmy(KeyCode.four, "Infantry", Color.lightBlue),
+        KeyCode.five: PlayerArmy(KeyCode.five, "Infantry", Color.lightBlue),
+        KeyCode.six: PlayerArmy(KeyCode.six, "Infantry", Color.lightBlue),
+        KeyCode.seven: PlayerArmy(KeyCode.seven, "Air Force", Color.lightAqua),
+        KeyCode.eight: PlayerArmy(
+          KeyCode.eight,
+          "Squad",
+          Color.lightPurple,
+          initialDestination: Vec(77, 17),
+        ),
+        KeyCode.nine: PlayerArmy(KeyCode.nine, "Squad", Color.lightPurple),
+        KeyCode.zero: PlayerArmy(
+          KeyCode.zero,
+          "HQ",
+          Color.lightGold,
+          initialDestination: Vec(39, 13),
+        ),
+      });
 
   static final _defaultEvilArmies = <EvilArmy>[
     //EvilArmy("Cal Pawns", initialPosition: Vec(24, 13)),
@@ -35,14 +51,15 @@ class Armies {
   final List<EvilArmy> evilArmies;
 
   Armies()
-      : playerArmies = _defaultPlayerArmies,
-        evilArmies = _defaultEvilArmies;
+    : playerArmies = _defaultPlayerArmies,
+      evilArmies = _defaultEvilArmies;
 
   factory Armies.from(List<Army> source) {
     int keyCode = 'a'.codeUnitAt(0);
 
-    final playerEntries =
-        source.whereType<PlayerArmy>().map((army) => MapEntry(keyCode++, army));
+    final playerEntries = source.whereType<PlayerArmy>().map(
+      (army) => MapEntry(keyCode++, army),
+    );
     final playerMap = Map<int, PlayerArmy>.fromEntries(playerEntries);
 
     final evilList = source.whereType<EvilArmy>().toList();
@@ -81,18 +98,20 @@ abstract class Army {
 
   void field(int count) {
     assert(
-        count <= availableStrength,
-        "$this is trying to field $count units "
-        "although only $availableStrength is available");
+      count <= availableStrength,
+      "$this is trying to field $count units "
+      "although only $availableStrength is available",
+    );
 
     _fieldedUnits += count;
   }
 
   void withdraw(int count) {
     assert(
-        count <= _fieldedUnits,
-        "$this is trying to withdraw $count units "
-        "although only $_fieldedUnits was fielded");
+      count <= _fieldedUnits,
+      "$this is trying to withdraw $count units "
+      "although only $_fieldedUnits was fielded",
+    );
 
     _fieldedUnits -= count;
   }
@@ -115,18 +134,23 @@ abstract class Army {
   /// The lesser this numbers, the faster the unit will travel.
   final ticksPerMove = 10;
 
-  Army._(this.name, this.color, this.isEvil,
-      {required Vec initialPosition, Vec? initialDestination})
-      : assert(initialPosition != null),
-        _pos = initialPosition {
+  Army._(
+    this.name,
+    this.color,
+    this.isEvil, {
+    required Vec initialPosition,
+    Vec? initialDestination,
+  }) : assert(initialPosition != null),
+       _pos = initialPosition {
     _destination = initialDestination ?? _pos;
   }
 
   int get availableStrength {
     assert(
-        maxStrength >= fieldedUnits + deadUnits,
-        "There are more fielded ($fieldedUnits) and dead ($deadUnits) "
-        "than the max strength ($maxStrength) of $this");
+      maxStrength >= fieldedUnits + deadUnits,
+      "There are more fielded ($fieldedUnits) and dead ($deadUnits) "
+      "than the max strength ($maxStrength) of $this",
+    );
     return maxStrength - fieldedUnits - deadUnits;
   }
 
@@ -156,13 +180,14 @@ abstract class Army {
   /// Marks [count] units as dead.
   void bury(int count) {
     assert(
-        count <= fieldedUnits ||
-            // TODO: remove this and instead make sure the math is okay even
-            //       for dying armies
-            !isAlive,
-        "Unfielded units cannot die: "
-        "$this was trying to bury $count units out of $fieldedUnits. "
-        "The max strength was $maxStrength and there are $deadUnits dead.");
+      count <= fieldedUnits ||
+          // TODO: remove this and instead make sure the math is okay even
+          //       for dying armies
+          !isAlive,
+      "Unfielded units cannot die: "
+      "$this was trying to bury $count units out of $fieldedUnits. "
+      "The max strength was $maxStrength and there are $deadUnits dead.",
+    );
     _deadUnits += count;
     _fieldedUnits -= count;
     // TODO: report loss of units to pubSub
@@ -202,8 +227,8 @@ class EvilArmy extends Army {
   final DateTime spawnTime;
 
   EvilArmy(String name, {DateTime? spawnTime, required Vec initialPosition})
-      : spawnTime = spawnTime ?? beginningOfPlay,
-        super._(name, Color.red, true, initialPosition: initialPosition);
+    : spawnTime = spawnTime ?? beginningOfPlay,
+      super._(name, Color.red, true, initialPosition: initialPosition);
 
   @override
   double get maxDeploymentRange => double.infinity;
@@ -229,11 +254,19 @@ class PlayerArmy extends Army {
 
   RangeMode _rangeMode = RangeMode.tight;
 
-  PlayerArmy(this.keyCode, String name, Color color,
-      {Vec initialPosition = const Vec(50, 18), Vec? initialDestination})
-      : super._(name, color, false,
-            initialPosition: initialPosition,
-            initialDestination: initialDestination);
+  PlayerArmy(
+    this.keyCode,
+    String name,
+    Color color, {
+    Vec initialPosition = const Vec(50, 18),
+    Vec? initialDestination,
+  }) : super._(
+         name,
+         color,
+         false,
+         initialPosition: initialPosition,
+         initialDestination: initialDestination,
+       );
 
   /// The city at which this army is currently deployed. Similar to
   /// [_latestCity] with one difference: [deployedAt] reverts to `null`
@@ -249,8 +282,6 @@ class PlayerArmy extends Army {
         return defaultMaxDeploymentRange;
       case RangeMode.seekAndDestroy:
         return double.infinity;
-      default:
-        throw StateError('Unhandled range mode: $_rangeMode');
     }
   }
 
@@ -303,12 +334,18 @@ class PlayerArmy extends Army {
       _latestCity = city;
 
       _moveToClosestUnoccupiedTile(
-          world, pos, otherArmies.whereType<PlayerArmy>().toList());
+        world,
+        pos,
+        otherArmies.whereType<PlayerArmy>().toList(),
+      );
     }
   }
 
   void _moveToClosestUnoccupiedTile(
-      World world, Vec start, List<PlayerArmy> otherArmies) {
+    World world,
+    Vec start,
+    List<PlayerArmy> otherArmies,
+  ) {
     final List<Vec> open = <Vec>[];
     final Set<Vec> close = Set();
     open.addAll(start.neighbors);
@@ -347,5 +384,5 @@ enum RangeMode {
   expanded,
 
   /// Just go and destroy.
-  seekAndDestroy
+  seekAndDestroy,
 }

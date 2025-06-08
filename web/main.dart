@@ -32,7 +32,7 @@ void _toggleFullscreen() {
     "webkitRequestFullscreen",
     "mozRequestFullScreen",
     "msRequestFullscreen",
-    "oRequestFullscreen"
+    "oRequestFullscreen",
   ];
 
   const exitMethods = [
@@ -40,7 +40,7 @@ void _toggleFullscreen() {
     "webkitExitFullscreen",
     "mozCancelFullScreen",
     "msExitFullscreen",
-    "oExitFullscreen"
+    "oExitFullscreen",
   ];
 
   final methods = isFullscreen ? exitMethods : requestMethods;

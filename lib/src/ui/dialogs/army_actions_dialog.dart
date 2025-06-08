@@ -32,8 +32,14 @@ class ArmyActionsDialog extends Screen<Input> {
 
   final UISharedState state;
 
-  ArmyActionsDialog(this._screenX, this._screenY, this.world, this.armies,
-      this.state, this.onKeyCallback) {
+  ArmyActionsDialog(
+    this._screenX,
+    this._screenY,
+    this.world,
+    this.armies,
+    this.state,
+    this.onKeyCallback,
+  ) {
     _commandsPanel = _buildCommandsPanel();
   }
 
@@ -98,19 +104,20 @@ class ArmyActionsDialog extends Screen<Input> {
   void render(Terminal terminal) {
     terminal.rect(_screenX, _screenY, 47, 6).clear();
 
-    _commandsPanel.borderColor =
-        _selectedInput == null ? TextTheme.important : Panel.defaultBorderColor;
+    _commandsPanel.borderColor = _selectedInput == null
+        ? TextTheme.important
+        : Panel.defaultBorderColor;
     _commandsPanel.render(terminal);
   }
 
   CommandsPanel _buildCommandsPanel() => CommandsPanel(
-        _screenX,
-        _screenY,
-        47,
-        5,
-        armies.map((a) => String.fromCharCode(a.keyCode)).join(', '),
-        ["Go", "Tight", "Expanded", "Destroy"],
-      );
+    _screenX,
+    _screenY,
+    47,
+    5,
+    armies.map((a) => String.fromCharCode(a.keyCode)).join(', '),
+    ["Go", "Tight", "Expanded", "Destroy"],
+  );
 }
 
 class GoDialogResult {

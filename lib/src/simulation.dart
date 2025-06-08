@@ -30,7 +30,9 @@ class Simulation {
     Tile? tile;
     for (var i = 0; i < 100; i++) {
       var pos = Vec(
-          _random.nextInt(world.mapWidth), _random.nextInt(world.mapHeight));
+        _random.nextInt(world.mapWidth),
+        _random.nextInt(world.mapHeight),
+      );
       var candidate = world.tiles[pos];
       if (candidate.isOcean) continue;
       if (candidate.isGood) continue;

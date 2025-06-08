@@ -23,7 +23,7 @@ class City {
   final Vec pos;
 
   City(this.name, this.pos, {int? keyCode})
-      : keyCode = keyCode ?? name.codeUnitAt(0);
+    : keyCode = keyCode ?? name.codeUnitAt(0);
 
   /// Deploys [army] in this city.
   void deploy(PlayerArmy army) {

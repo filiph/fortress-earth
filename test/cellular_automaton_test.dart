@@ -48,8 +48,12 @@ void main() {
     const height = 20;
 
     setUp(() {
-      world =
-          World(5, 5, (v) => Tile(v, height), cities: [City("SFO", Vec(0, 0))]);
+      world = World(
+        5,
+        5,
+        (v) => Tile(v, height),
+        cities: [City("SFO", Vec(0, 0))],
+      );
       army = PlayerArmy('a'.codeUnitAt(0), 'Army', Color.blue)
         ..setDestination(Vec(0, 0));
       armies = Armies.from([army]);

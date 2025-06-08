@@ -13,8 +13,12 @@ import 'package:malison/malison.dart';
 import 'package:malison/malison_web.dart';
 
 void runGame(html.CanvasElement canvas, {void Function()? fullscreenCallback}) {
-  final terminal = CanvasTerminal(width, height,
-      Font('Menlo, Consolas', size: 14, w: 10, h: 14, x: 1, y: 11), canvas);
+  final terminal = CanvasTerminal(
+    width,
+    height,
+    Font('Menlo, Consolas', size: 14, w: 10, h: 14, x: 1, y: 11),
+    canvas,
+  );
   final ui = UserInterface<Input>(terminal);
 
   ui.keyPress.bind(Input.pause, KeyCode.space);
@@ -32,7 +36,6 @@ void runGame(html.CanvasElement canvas, {void Function()? fullscreenCallback}) {
   ui.keyPress.bind(Input.debugNeedGradient, KeyCode.n, alt: true);
   ui.keyPress.bind(Input.debugShowFramerate, KeyCode.d, alt: true);
   ui.keyPress.bind(Input.debugAddCore, KeyCode.x, alt: true, shift: true);
-
 
   final world = World(
     mapWidth,

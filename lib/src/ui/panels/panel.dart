@@ -10,7 +10,7 @@ abstract class Panel {
   Rect bounds;
 
   Panel(int x, int y, int width, int height)
-      : bounds = Rect(x, y, width, height);
+    : bounds = Rect(x, y, width, height);
 
   void addAnimation(Animation animation) => _animations.add(animation);
 
@@ -24,9 +24,21 @@ abstract class Panel {
     if (bounds == null) return;
 
     Draw.box(
-        terminal, bounds.x, bounds.y, bounds.width, bounds.height, borderColor);
-    renderPanel(terminal.rect(
-        bounds.x + 2, bounds.y, bounds.width - 4, bounds.height - 1));
+      terminal,
+      bounds.x,
+      bounds.y,
+      bounds.width,
+      bounds.height,
+      borderColor,
+    );
+    renderPanel(
+      terminal.rect(
+        bounds.x + 2,
+        bounds.y,
+        bounds.width - 4,
+        bounds.height - 1,
+      ),
+    );
 
     while (_animations.isNotEmpty && _animations.first.isFinished) {
       _animations.removeAt(0);
@@ -34,8 +46,9 @@ abstract class Panel {
 
     if (_animations.isEmpty) return;
 
-    _animations.first
-        .update(terminal.rect(bounds.x, bounds.y, bounds.width, bounds.height));
+    _animations.first.update(
+      terminal.rect(bounds.x, bounds.y, bounds.width, bounds.height),
+    );
   }
 
   @protected

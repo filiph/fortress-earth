@@ -11,7 +11,7 @@ class UnitPanel extends Panel {
   UnmodifiableListView selected;
 
   UnitPanel(int x, int y, int width, int height, this.armies, this.selected)
-      : super(x, y, width, height);
+    : super(x, y, width, height);
 
   @override
   void renderPanel(Terminal terminal) {

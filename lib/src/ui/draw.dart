@@ -15,26 +15,86 @@ const _maroon = Color(0x54, 0x00, 0x27);
 const _red = Color(0xcc, 0x23, 0x39);
 
 class Draw {
-  static void box(Terminal terminal, int x, int y, int width, int height,
-      [Color? color]) {
-    _box(terminal, x, y, width, height, color, "┌", "─", "┐", "│", "└", "─",
-        "┘");
+  static void box(
+    Terminal terminal,
+    int x,
+    int y,
+    int width,
+    int height, [
+    Color? color,
+  ]) {
+    _box(
+      terminal,
+      x,
+      y,
+      width,
+      height,
+      color,
+      "┌",
+      "─",
+      "┐",
+      "│",
+      "└",
+      "─",
+      "┘",
+    );
   }
 
-  static void doubleBox(Terminal terminal, int x, int y, int width, int height,
-      [Color? color]) {
-    _box(terminal, x, y, width, height, color, "╔", "═", "╗", "║", "╚", "═",
-        "╝");
+  static void doubleBox(
+    Terminal terminal,
+    int x,
+    int y,
+    int width,
+    int height, [
+    Color? color,
+  ]) {
+    _box(
+      terminal,
+      x,
+      y,
+      width,
+      height,
+      color,
+      "╔",
+      "═",
+      "╗",
+      "║",
+      "╚",
+      "═",
+      "╝",
+    );
   }
 
-  static void frame(Terminal terminal, int x, int y, int width, int height,
-      [Color? color]) {
-    _box(terminal, x, y, width, height, color, "╒", "═", "╕", "│", "└", "─",
-        "┘");
+  static void frame(
+    Terminal terminal,
+    int x,
+    int y,
+    int width,
+    int height, [
+    Color? color,
+  ]) {
+    _box(
+      terminal,
+      x,
+      y,
+      width,
+      height,
+      color,
+      "╒",
+      "═",
+      "╕",
+      "│",
+      "└",
+      "─",
+      "┘",
+    );
   }
 
-  static void helpKeys(Terminal terminal, Map<String, String> helpKeys,
-      [String? query]) {
+  static void helpKeys(
+    Terminal terminal,
+    Map<String, String> helpKeys, [
+    String? query,
+  ]) {
     // Draw the help.
     var helpTextLength = 0;
     helpKeys.forEach((key, text) {
@@ -46,13 +106,29 @@ class Draw {
 
     // Show the query string, if there is one.
     if (query != null) {
-      box(terminal, x - 2, terminal.height - 4, helpTextLength + 4, 5,
-          _UIHue._text);
-      terminal.writeAt((terminal.width - query.length) ~/ 2,
-          terminal.height - 3, query, _UIHue._primary);
+      box(
+        terminal,
+        x - 2,
+        terminal.height - 4,
+        helpTextLength + 4,
+        5,
+        _UIHue._text,
+      );
+      terminal.writeAt(
+        (terminal.width - query.length) ~/ 2,
+        terminal.height - 3,
+        query,
+        _UIHue._primary,
+      );
     } else {
-      box(terminal, x - 2, terminal.height - 2, helpTextLength + 4, 3,
-          _UIHue._text);
+      box(
+        terminal,
+        x - 2,
+        terminal.height - 2,
+        helpTextLength + 4,
+        3,
+        _UIHue._text,
+      );
     }
 
     var first = true;
@@ -82,8 +158,15 @@ class Draw {
   /// will only be full if [value] is exactly [max], otherwise at least one
   /// half unit will be missing.
   static void meter(
-      Terminal terminal, int x, int y, int width, int value, int max,
-      [Color? fore, Color? back]) {
+    Terminal terminal,
+    int x,
+    int y,
+    int width,
+    int value,
+    int max, [
+    Color? fore,
+    Color? back,
+  ]) {
     assert(max != 0);
 
     fore ??= _red;
@@ -113,8 +196,15 @@ class Draw {
   /// will only be full if [value] is exactly [max], otherwise at least one
   /// half unit will be missing.
   static void thinMeter(
-      Terminal terminal, int x, int y, int width, int value, int max,
-      [Color? fore, Color? back]) {
+    Terminal terminal,
+    int x,
+    int y,
+    int width,
+    int value,
+    int max, [
+    Color? fore,
+    Color? back,
+  ]) {
     assert(max != 0);
 
     fore ??= _red;
@@ -134,19 +224,20 @@ class Draw {
   }
 
   static void _box(
-      Terminal terminal,
-      int x,
-      int y,
-      int width,
-      int height,
-      Color? color,
-      String topLeft,
-      String top,
-      String topRight,
-      String vertical,
-      String bottomLeft,
-      String bottom,
-      String bottomRight) {
+    Terminal terminal,
+    int x,
+    int y,
+    int width,
+    int height,
+    Color? color,
+    String topLeft,
+    String top,
+    String topRight,
+    String vertical,
+    String bottomLeft,
+    String bottom,
+    String bottomRight,
+  ) {
     color ??= _darkCoolGray;
     var bar = vertical + " " * (width - 2) + vertical;
     for (var row = y + 1; row < y + height - 1; row++) {
