@@ -140,8 +140,7 @@ abstract class Army {
     this.isEvil, {
     required Vec initialPosition,
     Vec? initialDestination,
-  }) : assert(initialPosition != null),
-       _pos = initialPosition {
+  }) : _pos = initialPosition {
     _destination = initialDestination ?? _pos;
   }
 

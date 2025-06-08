@@ -21,8 +21,6 @@ abstract class Panel {
   final List<Animation> _animations = [];
 
   void render(Terminal terminal) {
-    if (bounds == null) return;
-
     Draw.box(
       terminal,
       bounds.x,
