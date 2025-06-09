@@ -13,6 +13,7 @@ class ChatPanel extends Panel {
 
     terminal.writeAt(0, 5, "Use keyboard to send units.", TextTheme.normal);
     terminal.writeAt(0, 6, "Alt-shift-X to add enemy.", TextTheme.normal);
+    terminal.writeAt(0, 7, "Alt-S for sound.", TextTheme.normal);
 
     var y = bounds.height - 6;
 
