@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:fortress_earth/src/tile.dart';
 import 'package:logging/logging.dart';
+import 'package:meta/meta.dart';
 
 final _log = Logger("PubSub");
 
@@ -24,7 +25,7 @@ class PubSub implements Sink<void> {
   /// This is here to satisfy [Sink]'s contract. We implement [Sink] because
   /// we want to get the linter rule `close_sinks`.
   @override
-  @deprecated
+  @protected
   void add(void _) {
     throw UnimplementedError("Please call the concrete publish___() methods.");
   }
