@@ -54,8 +54,15 @@ void main() {
         (v) => Tile(v, height),
         cities: [City("SFO", Vec(0, 0))],
       );
-      army = PlayerArmy('a'.codeUnitAt(0), 'Army', Color.blue)
-        ..setDestination(Vec(0, 0));
+      army =
+          PlayerArmy(
+              'a'.codeUnitAt(0),
+              'Army',
+              Color.blue,
+              initialPosition: Vec(1, 1),
+            )
+            ..setDestination(Vec(0, 0))
+            ..setRangeMode(RangeMode.expanded);
       armies = Armies.from([army]);
       sim = Simulation(world, armies);
     });

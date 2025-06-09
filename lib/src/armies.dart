@@ -350,7 +350,9 @@ class PlayerArmy extends Army {
     final List<Vec> open = <Vec>[];
     final Set<Vec> close = {};
 
-    open.addAll(start.neighbors);
+    bool inBounds(Vec vec) => world.tiles.bounds.contains(vec);
+
+    open.addAll(start.neighbors.where(inBounds));
     Vec? result;
 
     while (open.isNotEmpty) {
@@ -358,12 +360,20 @@ class PlayerArmy extends Army {
       var tile = world.tiles[current];
       if (tile.isOcean) {
         close.add(current);
-        open.addAll(current.neighbors.where((vec) => !close.contains(vec)));
+        open.addAll(
+          current.neighbors.where(
+            (vec) => inBounds(vec) && !close.contains(vec),
+          ),
+        );
         continue;
       }
       if (otherArmies.any((army) => army.pos == current)) {
         close.add(current);
-        open.addAll(current.neighbors.where((vec) => !close.contains(vec)));
+        open.addAll(
+          current.neighbors.where(
+            (vec) => inBounds(vec) && !close.contains(vec),
+          ),
+        );
         continue;
       }
       result = current;

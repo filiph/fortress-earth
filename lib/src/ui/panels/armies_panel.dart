@@ -1,14 +1,14 @@
 import 'dart:collection';
 
+import 'package:fortress_earth/src/armies.dart';
 import 'package:fortress_earth/src/ui/panels/panel.dart';
 import 'package:fortress_earth/src/ui/theme.dart';
-import 'package:fortress_earth/src/armies.dart';
 import 'package:malison/malison.dart';
 
 class UnitPanel extends Panel {
   Armies armies;
 
-  UnmodifiableListView selected;
+  UnmodifiableListView<Army> selected;
 
   UnitPanel(
     super.x,
