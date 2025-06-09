@@ -1,8 +1,11 @@
 EARTH_WITHOUT_WATER=https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/raster/NE2_HR_LC.zip
 EARTH_WITH_WATER=https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/raster/NE2_HR_LC_SR_W_DR.zip
 
-build: parse_map
-	@echo "Project built."
+phony:
+	@echo "No default make command. Read the Makefile to see what's possible."
+
+build_map: parse_map
+	@echo "Map (re-)built."
 
 parse_map: assets/NE2_HR_LC/NE2_HR_LC.tif assets/NE2_HR_LC_SR_W_DR/NE2_HR_LC_SR_W_DR.tif
 	dart tool/parse_map.dart assets/NE2_HR_LC_SR_W_DR/NE2_HR_LC_SR_W_DR.tif \

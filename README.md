@@ -1,15 +1,29 @@
+[![No Maintenance Intended](http://unmaintained.tech/badge.svg)](http://unmaintained.tech/)
+
 # Fortress Earth
 
-[![No Maintenance Intended](http://unmaintained.tech/badge.svg)](http://unmaintained.tech/)
+A game of grand strategy based on cellular automaton-like code.
+
+Design goals:
+
+- **Low-barrier.** Immediate startup. Web-based.
+  Minimal hardware requirements. No gore or mature themes.
+- **Keyboard-only.** No mouse input needed, 
+  so the game can be played comfortably even on a laptop.
+  Player should feel like a "hacker" while ordering her armies around.
+- **Grand strategy.** Player is a "commander-in-chief":
+  making only the most strategic of decisions, such as sending armies around
+  the world.
 
 ## Development
 
-### Initial setup
+This is a pure Dart web project. It uses `pkg:malison` to render ASCII art
+in the browser in a browser-independent and performant way.
 
-1. Make sure you have Dart installed.
-2. Run `make`. This will download supporting assets and will build the terrain data file.
+### Re-building the map
 
-### Day-to-day development
+The game runs on a map (currently map of the Earth). This map is represented
+in code in the generated `lib/src/data/earth_terrain.part.dart`.
 
-1. Either use an IntelliJ IDE with the Dart plugin, or use Dart's 
-   [`webdev serve`](https://pub.dartlang.org/packages/webdev) tool.
+To recreate this data, you can run `make build_map`. This will download
+the underlying data from https://www.naturalearthdata.com and parse it.
