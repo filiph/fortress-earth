@@ -18,7 +18,7 @@ import 'package:piecemeal/piecemeal.dart';
 class GameScreen extends Screen<Input> {
   final void Function()? fullscreenCallback;
 
-  Stopwatch _stopwatch = Stopwatch();
+  final Stopwatch _stopwatch = Stopwatch();
 
   int _latestUpdateTime = 0;
 
@@ -69,6 +69,7 @@ class GameScreen extends Screen<Input> {
     );
   }
 
+  @override
   void activate(Screen<Input> popped, Object? result) {
     if (result == null) {
       _selectedArmies.clear();
@@ -94,6 +95,7 @@ class GameScreen extends Screen<Input> {
     }
   }
 
+  @override
   bool handleInput(Input input) {
     switch (input) {
       case Input.pause:
@@ -127,6 +129,7 @@ class GameScreen extends Screen<Input> {
     return true;
   }
 
+  @override
   bool keyDown(int keyCode, {required bool shift, required bool alt}) {
     var army = _getArmyFromKeyCode(keyCode);
     if (army != null) {
@@ -170,6 +173,7 @@ class GameScreen extends Screen<Input> {
     }
   }
 
+  @override
   void render(Terminal terminal) {
     _stopwatch.reset();
     _stopwatch.start();
@@ -217,9 +221,7 @@ class GameScreen extends Screen<Input> {
         } else {
           char = '▓';
         }
-        if (foregroundColor == null) {
-          foregroundColor = tile.foregroundColor;
-        }
+        foregroundColor ??= tile.foregroundColor;
 
         terminal.writeAt(
           screenX,
@@ -286,6 +288,7 @@ class GameScreen extends Screen<Input> {
     _stopwatch.stop();
   }
 
+  @override
   void update() {
     _stopwatch.reset();
     _stopwatch.start();

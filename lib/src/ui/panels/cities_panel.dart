@@ -11,16 +11,16 @@ class CitiesPanel extends Panel {
   final UISharedState state;
 
   CitiesPanel(
-    int x,
-    int y,
-    int width,
-    int height,
+    super.x,
+    super.y,
+    super.width,
+    super.height,
     Map<Vec, City> cities,
     this.state,
   ) : _cities = cities.values.toList(growable: false)
-        ..sort((a, b) => a.name.compareTo(b.name)),
-      super(x, y, width, height);
+        ..sort((a, b) => a.name.compareTo(b.name));
 
+  @override
   Color get borderColor =>
       state.citiesPanelActive ? TextTheme.important : Panel.defaultBorderColor;
 
@@ -31,7 +31,7 @@ class CitiesPanel extends Panel {
     // List of cities.
     int y = 2;
     for (final city in _cities) {
-      terminal.writeAt(0, y, "${city.name}");
+      terminal.writeAt(0, y, city.name);
       // TODO: show overtaken cities
       terminal.writeAt(22, y, 'OK', TextTheme.ok);
 

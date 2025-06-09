@@ -1,6 +1,6 @@
 /// Taken directly from
 /// https://github.com/munificent/hauberk/blob/master/lib/src/ui/draw.dart
-library hauberk.draw;
+library;
 
 import 'package:malison/malison.dart';
 

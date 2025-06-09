@@ -10,7 +10,7 @@ void main() {
     late List<TileTakenOverEvent> events;
 
     /// A helper function to record the fact that an event was received.
-    void _recordEventFired(TileTakenOverEvent event) {
+    void recordEventFired(TileTakenOverEvent event) {
       events.add(event);
     }
 
@@ -24,7 +24,7 @@ void main() {
     });
 
     test("subscription works", () {
-      pubsub.tileTakenOver.listen(_recordEventFired);
+      pubsub.tileTakenOver.listen(recordEventFired);
       pubsub.seal();
       pubsub.publishTileTakenOver(
         TileTakenOverEvent(Tile(Vec(0, 0), 20), true),
@@ -42,7 +42,7 @@ void main() {
     });
 
     test("event doesn't fire after subscription cancelled", () {
-      final sub = pubsub.tileTakenOver.listen(_recordEventFired);
+      final sub = pubsub.tileTakenOver.listen(recordEventFired);
       pubsub.seal();
       pubsub.publishTileTakenOver(
         TileTakenOverEvent(Tile(Vec(1, 0), 20), true),
@@ -68,7 +68,7 @@ void main() {
       }
 
       pubsub.tileTakenOver.listen(zerothRecord);
-      pubsub.tileTakenOver.listen(_recordEventFired);
+      pubsub.tileTakenOver.listen(recordEventFired);
       pubsub.tileTakenOver.listen(secondRecord);
       pubsub.seal();
       pubsub.publishTileTakenOver(

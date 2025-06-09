@@ -8,17 +8,24 @@ class CommandsPanel extends Panel {
 
   final List<String> commands;
 
+  @override
   Color borderColor = Panel.defaultBorderColor;
 
-  CommandsPanel(int x, int y, int width, int height, this.title, this.commands)
-    : super(x, y, width, height) {
+  CommandsPanel(
+    super.x,
+    super.y,
+    super.width,
+    super.height,
+    this.title,
+    this.commands,
+  ) {
     addAnimation(WipeAnimation());
   }
 
   @override
   void renderPanel(Terminal terminal) {
     terminal.writeAt(0, 0, " Command for: ", TextTheme.detail);
-    terminal.writeAt(14, 0, title + " ", TextTheme.normal);
+    terminal.writeAt(14, 0, "$title ", TextTheme.normal);
 
     var y = 2;
     var x = 1;

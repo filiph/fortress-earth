@@ -34,9 +34,9 @@ class World {
 
   DateTime _currentTime;
 
-  Array2D<Tile> _tiles;
+  final Array2D<Tile> _tiles;
 
-  Map<Vec, City> _cities;
+  final Map<Vec, City> _cities;
 
   World(
     this.mapWidth,
@@ -50,7 +50,7 @@ class World {
        _currentTime = beginningOfPlay,
        _tiles = Array2D<Tile>.generated(mapWidth, mapHeight, generator) {
     assert(() {
-      final keyCodes = Set<int>();
+      final keyCodes = <int>{};
       for (final city in _cities.values) {
         if (keyCodes.contains(city.keyCode)) return false;
         keyCodes.add(city.keyCode);
@@ -122,8 +122,12 @@ class World {
     var x = vec.x;
     var y = vec.y;
     if (y < 0 || y >= mapHeight) return null;
-    while (x < 0) x = x + mapWidth;
-    while (x >= mapWidth) x = x - mapWidth;
+    while (x < 0) {
+      x = x + mapWidth;
+    }
+    while (x >= mapWidth) {
+      x = x - mapWidth;
+    }
     return Vec(x, y);
   }
 

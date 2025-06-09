@@ -3,7 +3,7 @@ import 'package:fortress_earth/src/ui/theme.dart';
 import 'package:malison/malison.dart';
 
 class ChatPanel extends Panel {
-  ChatPanel(int x, int y, int width, int height) : super(x, y, width, height);
+  ChatPanel(super.x, super.y, super.width, super.height);
 
   @override
   void renderPanel(Terminal terminal) {

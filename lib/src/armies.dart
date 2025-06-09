@@ -294,6 +294,7 @@ class PlayerArmy extends Army {
   }
 
   /// Returns `true` if [tile] is in [maxDeploymentRange] from "home".
+  @override
   bool canExpandTo(Tile tile) {
     if (deployedAt == null) return false;
 

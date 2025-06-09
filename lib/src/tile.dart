@@ -51,14 +51,14 @@ class Tile {
   ///
   /// It only depends on needs local to this tile. Contrast to
   /// [_unitDemandGradient].
-  final Map<Army, int> _unitDemand = Map<Army, int>();
+  final Map<Army, int> _unitDemand = <Army, int>{};
 
   /// Measures how correct it is for units of an [Army] to be at this tile.
   /// This changes when an army changes position, or changes [RangeMode].
-  final Map<Army, int> _unitSafeDeployment = Map<Army, int>();
+  final Map<Army, int> _unitSafeDeployment = <Army, int>{};
 
   /// Same as [_unitDemandGradient] but for [_unitSafeDeployment].
-  final Map<Army, double> _unitSafeDeploymentGradient = Map<Army, double>();
+  final Map<Army, double> _unitSafeDeploymentGradient = <Army, double>{};
 
   /// Propagated need. When tile A has higher [_unitDemandGradient] than tile B,
   /// then units should move from B to A.
@@ -70,12 +70,12 @@ class Tile {
   ///
   /// This way, tiles that are in trouble pump this information into the
   /// gradient.
-  final Map<Army, double> _unitDemandGradient = Map<Army, double>();
+  final Map<Army, double> _unitDemandGradient = <Army, double>{};
 
   /// The number of units per each army on this tile.
   ///
   /// Every time you update this, don't forget to call [_updateGoodOrEvil].
-  final Map<Army, int> _units = Map<Army, int>();
+  final Map<Army, int> _units = <Army, int>{};
 
   /// Memoized number of good units on this tile.
   ///
@@ -222,7 +222,7 @@ class Tile {
     final landNeighbors = hood.neighbors
         .where((t) => !t.isOcean)
         .toList(growable: false);
-    if (landNeighbors.length > 0) {
+    if (landNeighbors.isNotEmpty) {
       final maxNeedGradient = landNeighbors.fold<double>(
         0,
         (prev, tile) =>
@@ -356,7 +356,7 @@ class Tile {
     final landNeighbors = hood.neighbors
         .where((t) => !t.isOcean)
         .toList(growable: false);
-    if (landNeighbors.length > 0) {
+    if (landNeighbors.isNotEmpty) {
       final maxNeedGradient = landNeighbors.fold<double>(
         0,
         (prev, tile) => max(
@@ -470,8 +470,9 @@ class Tile {
       if (prev == null) return tile;
       prev._unitDemandGradient[army] ??= 0;
       tile._unitDemandGradient[army] ??= 0;
-      if (tile._unitDemandGradient[army]! > prev._unitDemandGradient[army]!)
+      if (tile._unitDemandGradient[army]! > prev._unitDemandGradient[army]!) {
         return tile;
+      }
       return prev;
     });
 
@@ -506,8 +507,9 @@ class Tile {
       prev._unitSafeDeploymentGradient[army] ??= 0;
       tile._unitSafeDeploymentGradient[army] ??= 0;
       if (tile._unitSafeDeploymentGradient[army]! >
-          prev._unitSafeDeploymentGradient[army]!)
+          prev._unitSafeDeploymentGradient[army]!) {
         return tile;
+      }
       return prev;
     });
 
@@ -551,7 +553,7 @@ class Tile {
         .where((t) => t.isEnemyFactionOccupied(army) && army.canExpandTo(t))
         .toList(growable: false);
 
-    if (enemyTiles.length == 0) {
+    if (enemyTiles.isEmpty) {
       // Nothing to attack.
       return false;
     }

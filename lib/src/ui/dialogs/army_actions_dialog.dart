@@ -43,8 +43,10 @@ class ArmyActionsDialog extends Screen<Input> {
     _commandsPanel = _buildCommandsPanel();
   }
 
+  @override
   bool get isTransparent => true;
 
+  @override
   void activate(Screen<Input> popped, Object? result) {
     if (result == null) return;
     assert(result is City);
@@ -54,6 +56,7 @@ class ArmyActionsDialog extends Screen<Input> {
     ui.pop(GoDialogResult(armies, result as City));
   }
 
+  @override
   bool handleInput(Input input) {
     switch (input) {
       case Input.cancel:
@@ -88,6 +91,7 @@ class ArmyActionsDialog extends Screen<Input> {
     return true;
   }
 
+  @override
   bool keyDown(int keyCode, {required bool shift, required bool alt}) {
     if (shift || alt) return false;
     var isChanged = onKeyCallback(keyCode);
@@ -101,6 +105,7 @@ class ArmyActionsDialog extends Screen<Input> {
 
   late CommandsPanel _commandsPanel;
 
+  @override
   void render(Terminal terminal) {
     terminal.rect(_screenX, _screenY, 47, 6).clear();
 

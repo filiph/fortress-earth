@@ -14,8 +14,10 @@ class WhereDialog extends Screen<Input> {
   WhereDialog(Iterable<City> cities, this.state)
     : cities = cities.toList(growable: false);
 
+  @override
   bool get isTransparent => true;
 
+  @override
   bool handleInput(Input input) {
     switch (input) {
       case Input.cancel:
@@ -30,6 +32,7 @@ class WhereDialog extends Screen<Input> {
     return true;
   }
 
+  @override
   bool keyDown(int keyCode, {required bool shift, required bool alt}) {
     for (final city in cities) {
       if (city.keyCode == keyCode) {
@@ -45,6 +48,7 @@ class WhereDialog extends Screen<Input> {
     return false;
   }
 
+  @override
   void update() {
     // Make sure we show the city dialog.
     state.citiesPanelActive = true;

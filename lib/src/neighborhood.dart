@@ -114,8 +114,12 @@ class Neighborhood {
       x += worldWidth ~/ 2;
     }
     // X is simply wrapped around.
-    while (x < 0) x += worldWidth;
-    while (x >= worldWidth) x -= worldWidth;
+    while (x < 0) {
+      x += worldWidth;
+    }
+    while (x >= worldWidth) {
+      x -= worldWidth;
+    }
 
     return Vec(x, y);
   }
