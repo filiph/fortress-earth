@@ -348,7 +348,8 @@ class PlayerArmy extends Army {
     List<PlayerArmy> otherArmies,
   ) {
     final List<Vec> open = <Vec>[];
-    final Set<Vec> close = Set();
+    final Set<Vec> close = {};
+
     open.addAll(start.neighbors);
     Vec? result;
 
