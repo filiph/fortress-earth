@@ -2,7 +2,7 @@
 
 # Fortress Earth
 
-A game of grand strategy based on cellular automaton-like code.
+A keyboard-only game of grand strategy based on cellular automaton behavior.
 
 Design goals:
 
