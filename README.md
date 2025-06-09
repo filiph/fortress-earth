@@ -1,6 +1,6 @@
 # Fortress Earth
 
-
+[![No Maintenance Intended](http://unmaintained.tech/badge.svg)](http://unmaintained.tech/)
 
 ## Development
 
