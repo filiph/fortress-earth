@@ -321,7 +321,7 @@ class Tile {
         _units[playerArmy]!,
       );
       _units[playerArmy] = _units[playerArmy]! - withdrawals;
-      _updateGoodOrEvil(false, withdrawals);
+      _updateGoodOrEvil(false, -withdrawals);
     }
   }
 
